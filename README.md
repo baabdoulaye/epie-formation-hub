@@ -1,73 +1,352 @@
-# Welcome to your Lovable project
 
-## Project info
+# EPIE Connect - Intranet de Gestion
 
-**URL**: https://lovable.dev/projects/1d9898b9-b34a-4e38-b4d5-fb5d1cbfa89b
+## 📋 Description du Projet
 
-## How can I edit this code?
+EPIE Connect est une application web intranet moderne développée pour EPIE Formation. Cette plateforme centralisée permet aux employés d'accéder rapidement aux données opérationnelles clés, de visualiser des indicateurs de performance et de gérer les informations essentielles du centre de formation.
 
-There are several ways of editing your application.
+## 🎯 Objectifs Principaux
 
-**Use Lovable**
+- **Centralisation des données** : Une plateforme unique pour toutes les informations importantes
+- **Tableau de bord dynamique** : Visualisation en temps réel des indicateurs clés de performance
+- **Gestion simplifiée** : Interface intuitive pour la gestion des stagiaires, formations et employés
+- **Sécurité renforcée** : Système d'authentification avec gestion des rôles et permissions
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/1d9898b9-b34a-4e38-b4d5-fb5d1cbfa89b) and start prompting.
+## 👥 Public Cible
 
-Changes made via Lovable will be committed automatically to this repo.
+Cette application est exclusivement destinée aux employés et à la direction d'EPIE Formation, incluant :
+- Administrateurs
+- Managers
+- Formateurs
+- Personnel administratif
 
-**Use your preferred IDE**
+## 🚀 Fonctionnalités Principales
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 🔐 Gestion des Utilisateurs
+- **Création de compte** : Inscription sécurisée avec email/mot de passe
+- **Authentification** : Connexion/déconnexion sécurisées
+- **Réinitialisation de mot de passe** : Processus "Mot de passe oublié"
+- **Gestion de profil** : Modification des informations personnelles
+- **Système de rôles** : Administrateur, Manager, Formateur, Employé
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### 📊 Tableaux de Bord Dynamiques
+- **Vue d'ensemble** : Chiffres clés et statistiques principales
+- **Statistiques Stagiaires** : 
+  - Nombre total de stagiaires actifs
+  - Répartition par session et formation
+  - Graphiques de progression
+- **Statistiques Formations** :
+  - Sessions en cours, à venir, terminées
+  - Taux de réussite et d'abandon
+- **Statistiques Personnel** : Répartition par département et rôle
+- **Statistiques Partenaires** : Partenaires actifs par type
 
-Follow these steps:
+### 🛠️ Gestion des Données (CRUD)
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+#### Stagiaires
+- Inscription de nouveaux stagiaires
+- Modification des informations personnelles
+- Suppression de profils
+- Historique des formations
+- Suivi de progression
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+#### Formations et Sessions
+- Création de nouvelles formations
+- Planification des sessions
+- Attribution des formateurs superviseurs
+- Modification des détails existants
 
-# Step 3: Install the necessary dependencies.
-npm i
+#### Employés (Admin uniquement)
+- Ajout/modification/suppression des comptes
+- Gestion des rôles et permissions
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+#### Partenaires
+- Gestion complète des informations partenaires
+
+### 📈 Reporting et Export
+- Génération de rapports personnalisables
+- Export vers CSV, Excel, PDF
+- Analyses et archives
+
+### 📁 Gestion Documentaire
+- Upload de documents (contrats, supports, attestations)
+- Liaison avec les fiches stagiaires/formations
+- Accès et téléchargement sécurisés
+
+### 📅 Calendrier Intégré
+- Affichage des sessions de formation
+- Échéances importantes
+- Filtrage par formation, formateur, type
+
+### 🔍 Recherche et Filtrage
+- Recherche avancée multi-critères
+- Filtres pour affiner les vues
+- Navigation rapide
+
+## 🎓 Types de Formations Gérés
+
+### Formations Numériques
+- Parcours Sécurisé vers les métiers de l'informatique et du numérique
+- Parcours d'Accès à la Qualification aux métiers de l'informatique et du numérique
+- TP – Technicien(ne) d'Assistance Informatique
+- TP – Technicien(ne) Supérieur Système et Réseaux
+- TP – Technicien(ne) Réseaux IP
+
+### Formations Socles de Compétences
+- Compétences de bases professionnelles
+- Formation et Certification Cléa
+- Parcours Sécurisé vers les métiers de l'Accueil et du Secrétariat
+- Web Inclusion Numérique pour l'emploi
+
+### Formations Linguistiques
+- ALPHABETISATION
+- FRANÇAIS LANGUE ÉTRANGÉRE
+- Remise à niveau
+
+## 🛠️ Stack Technique
+
+### Frontend
+- **React 18** : Framework principal
+- **TypeScript** : Typage statique
+- **Tailwind CSS** : Framework CSS utilitaire
+- **Shadcn/ui** : Composants UI modernes
+- **Lucide React** : Icônes
+- **React Router** : Navigation
+- **React Query** : Gestion d'état et cache
+
+### Backend (À implémenter)
+- **Node.js** : Runtime JavaScript
+- **Express.js** : Framework web
+- **MongoDB** : Base de données NoSQL
+- **Mongoose** : ODM pour MongoDB
+- **JWT** : Authentification
+- **Bcrypt** : Hachage des mots de passe
+
+### Outils de Développement
+- **Vite** : Build tool
+- **ESLint** : Linting
+- **Prettier** : Formatage du code
+
+## 🎨 Design System
+
+### Charte Graphique EPIE Formation
+- **Vert EPIE** : #d3d92b
+- **Bleu EPIE** : #0077bc
+- **Variantes** : Tons clairs et foncés pour la hiérarchie visuelle
+
+### Principes de Design
+- **Minimalisme** : Interface épurée et moderne
+- **Flat Design** : Style plat contemporain
+- **Whitespace** : Utilisation intelligente de l'espace blanc
+- **Responsive** : Adaptation à tous les écrans
+- **Animations fluides** : Transitions douces et naturelles
+
+## 📱 Responsive Design
+
+L'application est entièrement responsive et optimisée pour :
+- **Desktop** : Écrans larges (1200px+)
+- **Tablettes** : Écrans moyens (768px - 1199px)
+- **Mobiles** : Écrans petits (< 768px)
+
+## 🚀 Installation et Démarrage
+
+### Prérequis
+- Node.js (version 18+)
+- npm ou yarn
+- Git
+
+### Installation
+```bash
+# Cloner le repository
+git clone [URL_DU_REPO]
+cd epie-connect
+
+# Installer les dépendances
+npm install
+
+# Démarrer le serveur de développement
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Variables d'Environnement
+Créer un fichier `.env` à la racine :
+```env
+VITE_API_URL=http://localhost:3001/api
+VITE_APP_NAME=EPIE Connect
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📂 Structure du Projet
 
-**Use GitHub Codespaces**
+```
+src/
+├── components/          # Composants React réutilisables
+│   ├── ui/             # Composants UI de base (shadcn)
+│   ├── forms/          # Composants de formulaires
+│   ├── charts/         # Composants de graphiques
+│   └── layout/         # Composants de mise en page
+├── pages/              # Pages principales de l'application
+│   ├── auth/           # Pages d'authentification
+│   ├── dashboard/      # Tableaux de bord
+│   ├── students/       # Gestion des stagiaires
+│   ├── trainings/      # Gestion des formations
+│   ├── employees/      # Gestion des employés
+│   └── partners/       # Gestion des partenaires
+├── hooks/              # Hooks React personnalisés
+├── lib/                # Utilitaires et helpers
+├── types/              # Définitions TypeScript
+├── context/            # Contextes React (authentification, etc.)
+└── assets/             # Images, icônes, etc.
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🔒 Sécurité
 
-## What technologies are used for this project?
+### Mesures Implémentées
+- **Authentification JWT** : Tokens sécurisés
+- **Hachage des mots de passe** : Bcrypt avec salt
+- **Validation des données** : Côté client et serveur
+- **Protection CSRF** : Tokens anti-forgery
+- **Gestion des rôles** : Contrôle d'accès basé sur les rôles (RBAC)
 
-This project is built with:
+### Bonnes Pratiques
+- Validation stricte des entrées utilisateur
+- Sanitisation des données
+- Chiffrement des données sensibles
+- Audit des accès et actions
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 📊 Base de Données MongoDB
 
-## How can I deploy this project?
+### Collections Principales
+```javascript
+// Utilisateurs (Employés)
+users: {
+  _id: ObjectId,
+  email: String,
+  password: String (hashed),
+  firstName: String,
+  lastName: String,
+  role: String, // 'admin', 'manager', 'trainer', 'employee'
+  department: String,
+  isActive: Boolean,
+  createdAt: Date,
+  updatedAt: Date
+}
 
-Simply open [Lovable](https://lovable.dev/projects/1d9898b9-b34a-4e38-b4d5-fb5d1cbfa89b) and click on Share -> Publish.
+// Stagiaires
+students: {
+  _id: ObjectId,
+  firstName: String,
+  lastName: String,
+  email: String,
+  phone: String,
+  birthDate: Date,
+  address: Object,
+  trainings: [ObjectId], // Références aux formations
+  status: String,
+  createdAt: Date,
+  updatedAt: Date
+}
 
-## Can I connect a custom domain to my Lovable project?
+// Formations
+trainings: {
+  _id: ObjectId,
+  name: String,
+  category: String,
+  description: String,
+  duration: Number,
+  supervisors: [ObjectId], // Références aux formateurs
+  sessions: [Object],
+  students: [ObjectId],
+  isActive: Boolean,
+  createdAt: Date,
+  updatedAt: Date
+}
 
-Yes, you can!
+// Partenaires
+partners: {
+  _id: ObjectId,
+  name: String,
+  type: String,
+  contactInfo: Object,
+  isActive: Boolean,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 🚀 Déploiement
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+### Environnements
+- **Développement** : Local avec Vite dev server
+- **Staging** : Serveur de test
+- **Production** : Serveur de production
+
+### Processus de Déploiement
+1. Tests automatisés
+2. Build de production
+3. Déploiement automatique
+4. Vérification post-déploiement
+
+## 🤝 Contribution
+
+### Standards de Code
+- **ESLint** : Respect des règles de linting
+- **Prettier** : Formatage automatique
+- **Conventions** : Nommage cohérent des variables et fonctions
+- **Commentaires** : Documentation du code complexe
+
+### Workflow Git
+```bash
+# Créer une branche pour une nouvelle fonctionnalité
+git checkout -b feature/nouvelle-fonctionnalite
+
+# Commit avec message descriptif
+git commit -m "feat: ajout de la gestion des formations"
+
+# Push et création de Pull Request
+git push origin feature/nouvelle-fonctionnalite
+```
+
+## 📞 Support et Contact
+
+### Équipe de Développement
+- **Lead Developer** : [Nom]
+- **UI/UX Designer** : [Nom]
+- **Backend Developer** : [Nom]
+
+### Documentation Technique
+- API Documentation : `/docs/api`
+- Component Library : `/docs/components`
+- Database Schema : `/docs/database`
+
+## 🔮 Roadmap
+
+### Version 1.0 (MVP)
+- [x] Interface utilisateur de base
+- [x] Système d'authentification
+- [x] Tableaux de bord principaux
+- [ ] Gestion CRUD complète
+- [ ] API Backend
+
+### Version 1.1
+- [ ] Système de notifications
+- [ ] Export avancé de données
+- [ ] Gestion documentaire
+- [ ] Calendrier intégré
+
+### Version 1.2
+- [ ] Application mobile
+- [ ] Intégrations externes
+- [ ] Analytics avancés
+- [ ] Notifications push
+
+## 📄 Licence
+
+Ce projet est propriétaire d'EPIE Formation. Tous droits réservés.
+
+---
+
+**EPIE Connect** - Intranet de Gestion Moderne pour EPIE Formation
+```
+
+Développé avec ❤️ pour EPIE Formation
+```
