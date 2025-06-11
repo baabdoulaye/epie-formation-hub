@@ -29,7 +29,7 @@ export interface AuthData {
   refreshToken: string;
 }
 
-// Types pour les stagiaires
+// Types pour les stagiaires avec tous les champs détaillés
 export interface Student {
   id: string;
   firstName: string;
@@ -37,7 +37,43 @@ export interface Student {
   email: string;
   phone: string;
   birthDate: Date;
-  address: Address;
+  age: number;
+  
+  // Informations de résidence
+  address: string;
+  postalCode: string;
+  city: string;
+  department: string;
+  
+  // Informations de naissance
+  birthCity: string;
+  birthCountry: string;
+  
+  // Organisme prescripteur
+  prescribingOrganization: string;
+  prescribingCity: string;
+  
+  // Formation et niveau
+  educationLevel: string;
+  
+  // Dates et présences importantes
+  infoCollectiveDate?: Date;
+  presentAtInfoCollective: boolean;
+  presentAtIndividualInterview: boolean;
+  
+  // Évaluation et positionnement
+  positioning: string;
+  centerDecision: string;
+  result: string;
+  
+  // Parcours
+  pathway1?: string;
+  pathway2?: string;
+  
+  // Communication
+  candidateInformation: string;
+  
+  // Relations avec formations
   trainings: string[]; // IDs des formations
   status: StudentStatus;
   documents: Document[];
@@ -48,7 +84,7 @@ export interface Student {
 // Statuts possibles pour un stagiaire
 export type StudentStatus = 'active' | 'inactive' | 'graduated' | 'dropped';
 
-// Interface pour les adresses
+// Interface pour les adresses (conservée pour compatibilité)
 export interface Address {
   street: string;
   city: string;

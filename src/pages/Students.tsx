@@ -1,9 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Layout from '@/components/layout/Layout';
+import AddStudentForm from '@/components/students/AddStudentForm';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Search, User } from 'lucide-react';
+import { Users, Search, User, ArrowLeft } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 /**
  * Page Students - Gestion des stagiaires
@@ -12,6 +14,71 @@ import { Users, Search, User } from 'lucide-react';
  * inscrits dans les formations d'EPIE
  */
 const Students: React.FC = () => {
+  const [showAddForm, setShowAddForm] = useState(false);
+  const { toast } = useToast();
+
+  /**
+   * Gère la soumission du formulaire d'ajout de stagiaire
+   * @param data - Données du formulaire validées
+   */
+  const handleAddStudent = (data: any) => {
+    console.log('Données du nouveau stagiaire:', data);
+    
+    // Ici, vous intégreriez l'appel API pour sauvegarder le stagiaire
+    // Exemple : await api.students.create(data);
+    
+    toast({
+      title: "Stagiaire ajouté avec succès",
+      description: `${data.firstName} ${data.lastName} a été ajouté à la base de données.`,
+    });
+    
+    // Retour à la liste des stagiaires
+    setShowAddForm(false);
+  };
+
+  /**
+   * Gère l'annulation de l'ajout de stagiaire
+   */
+  const handleCancelAdd = () => {
+    setShowAddForm(false);
+  };
+
+  // Affichage du formulaire d'ajout
+  if (showAddForm) {
+    return (
+      <Layout>
+        <div className="space-y-6">
+          {/* En-tête avec bouton retour */}
+          <div className="flex items-center space-x-4">
+            <Button 
+              variant="outline" 
+              onClick={handleCancelAdd}
+              className="flex items-center space-x-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Retour à la liste</span>
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Ajouter un Nouveau Stagiaire
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Remplissez tous les champs requis pour créer le profil complet du stagiaire
+              </p>
+            </div>
+          </div>
+
+          {/* Formulaire d'ajout */}
+          <AddStudentForm 
+            onSubmit={handleAddStudent}
+            onCancel={handleCancelAdd}
+          />
+        </div>
+      </Layout>
+    );
+  }
+
+  // Affichage de la liste des stagiaires
   return (
     <Layout>
       <div className="space-y-6">
@@ -25,7 +92,10 @@ const Students: React.FC = () => {
               245 stagiaires inscrits • 198 actifs
             </p>
           </div>
-          <Button className="bg-primary hover:bg-primary/90">
+          <Button 
+            className="bg-primary hover:bg-primary/90"
+            onClick={() => setShowAddForm(true)}
+          >
             <User className="mr-2 h-4 w-4" />
             Ajouter un Stagiaire
           </Button>
@@ -70,13 +140,13 @@ const Students: React.FC = () => {
             </h3>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
               Cette section permettra de gérer tous les stagiaires inscrits chez EPIE Formation. 
-              Fonctionnalités à venir : liste complète, profils détaillés, historique des formations, etc.
+              Le formulaire d'ajout complet est maintenant disponible avec tous les champs requis.
             </p>
             <div className="flex justify-center space-x-4">
               <Button variant="outline">
                 Voir la Liste Complète
               </Button>
-              <Button>
+              <Button onClick={() => setShowAddForm(true)}>
                 Ajouter un Stagiaire
               </Button>
             </div>
