@@ -58,6 +58,12 @@ const Sidebar: React.FC = () => {
       href: "/stages",
       icon: Briefcase,
       badge: 156
+    },
+    {
+      label: "Employés",
+      href: "/employes",
+      icon: User,
+      badge: 15
     }
   ];
 

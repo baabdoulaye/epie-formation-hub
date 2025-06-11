@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Students from "./pages/Students";
 import Trainings from "./pages/Trainings";
 import Internships from "./pages/Internships";
+import Employees from "./pages/Employees";
 import NotFound from "./pages/NotFound";
 
 /**
@@ -53,8 +54,10 @@ const App = () => (
           {/* Gestion des stages */}
           <Route path="/stages" element={<Internships />} />
           
+          {/* Gestion des employés */}
+          <Route path="/employes" element={<Employees />} />
+          
           {/* Pages à ajouter dans les prochaines versions */}
-          {/* <Route path="/employes" element={<Employees />} /> */}
           {/* <Route path="/partenaires" element={<Partners />} /> */}
           {/* <Route path="/recherche" element={<Search />} /> */}
           {/* <Route path="/calendrier" element={<Calendar />} /> */}
