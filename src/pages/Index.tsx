@@ -1,11 +1,12 @@
-
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import StatsCard from '@/components/dashboard/StatsCard';
 import ChartCard from '@/components/dashboard/ChartCard';
 import { Users, Calendar, User, File } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 /**
  * Page Index - Tableau de bord principal d'EPIE Connect
@@ -14,6 +15,9 @@ import { Button } from "@/components/ui/button";
  * de synthèse pour le pilotage des activités d'EPIE Formation
  */
 const Index: React.FC = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
   // Données mockées pour les statistiques (à remplacer par de vraies données API)
   const statsData = {
     students: {
@@ -82,6 +86,28 @@ const Index: React.FC = () => {
       status: 'Terminée'
     }
   ];
+
+  const handleQuickAction = (action: string) => {
+    switch (action) {
+      case 'add-student':
+        navigate('/stagiaires');
+        break;
+      case 'create-training':
+        navigate('/formations');
+        break;
+      case 'schedule-session':
+        toast({
+          title: "Planifier une Session",
+          description: "Fonctionnalité en cours de développement",
+        });
+        break;
+      case 'manage-users':
+        navigate('/employes');
+        break;
+      default:
+        break;
+    }
+  };
 
   return (
     <Layout>
@@ -206,19 +232,35 @@ const Index: React.FC = () => {
               <CardTitle>Actions Rapides</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button className="w-full justify-start" variant="outline">
+              <Button 
+                className="w-full justify-start" 
+                variant="outline"
+                onClick={() => handleQuickAction('add-student')}
+              >
                 <Users className="mr-2 h-4 w-4" />
                 Ajouter un Stagiaire
               </Button>
-              <Button className="w-full justify-start" variant="outline">
+              <Button 
+                className="w-full justify-start" 
+                variant="outline"
+                onClick={() => handleQuickAction('create-training')}
+              >
                 <File className="mr-2 h-4 w-4" />
                 Créer une Formation
               </Button>
-              <Button className="w-full justify-start" variant="outline">
+              <Button 
+                className="w-full justify-start" 
+                variant="outline"
+                onClick={() => handleQuickAction('schedule-session')}
+              >
                 <Calendar className="mr-2 h-4 w-4" />
                 Planifier une Session
               </Button>
-              <Button className="w-full justify-start" variant="outline">
+              <Button 
+                className="w-full justify-start" 
+                variant="outline"
+                onClick={() => handleQuickAction('manage-users')}
+              >
                 <User className="mr-2 h-4 w-4" />
                 Gérer les Utilisateurs
               </Button>
