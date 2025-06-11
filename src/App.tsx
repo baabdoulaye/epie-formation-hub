@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Students from "./pages/Students";
 import Trainings from "./pages/Trainings";
+import Internships from "./pages/Internships";
 import NotFound from "./pages/NotFound";
 
 /**
@@ -48,6 +49,9 @@ const App = () => (
           
           {/* Gestion des formations */}
           <Route path="/formations" element={<Trainings />} />
+          
+          {/* Gestion des stages */}
+          <Route path="/stages" element={<Internships />} />
           
           {/* Pages à ajouter dans les prochaines versions */}
           {/* <Route path="/employes" element={<Employees />} /> */}

@@ -1,4 +1,3 @@
-
 /**
  * Types TypeScript pour EPIE Connect
  * 
@@ -313,4 +312,74 @@ export interface AppConfig {
     documents: boolean;
     reports: boolean;
   };
+}
+
+/**
+ * Interface pour les stages effectués par les stagiaires
+ */
+export interface Internship {
+  id: string;
+  // Informations du stagiaire
+  civiliteEtudiant: 'M.' | 'Mme' | 'Mlle';
+  nom: string;
+  prenom: string;
+  dateNaissanceEtudiant: string;
+  adresseEtudiant: string;
+  codePostalEtudiant: string;
+  villeEtudiant: string;
+  telEtudiant: string;
+  emailEtudiant: string;
+  
+  // Informations de l'entreprise
+  entreprise: string;
+  dateStage: string;
+  secteurEntreprise: string;
+  adresseEntreprise: string;
+  cpeEntreprise: string;
+  villeEntreprise: string;
+  
+  // Informations du tuteur
+  civiliteTuteur: 'M.' | 'Mme' | 'Mlle';
+  tuteurStage: string;
+  telTuteur: string;
+  emailTuteur: string;
+  
+  // Informations du stage
+  conventionnee: boolean;
+  observations: string;
+  dateHeureVisite: string;
+  typeVisite: 'telephone' | 'visio' | 'presentiel';
+  
+  // Métadonnées
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Interface pour le formulaire d'ajout de stage
+ */
+export interface InternshipFormData {
+  civiliteEtudiant: 'M.' | 'Mme' | 'Mlle';
+  nom: string;
+  prenom: string;
+  dateNaissanceEtudiant: string;
+  adresseEtudiant: string;
+  codePostalEtudiant: string;
+  villeEtudiant: string;
+  telEtudiant: string;
+  emailEtudiant: string;
+  entreprise: string;
+  dateStage: string;
+  secteurEntreprise: string;
+  adresseEntreprise: string;
+  cpeEntreprise: string;
+  villeEntreprise: string;
+  civiliteTuteur: 'M.' | 'Mme' | 'Mlle';
+  tuteurStage: string;
+  telTuteur: string;
+  emailTuteur: string;
+  conventionnee: boolean;
+  observations: string;
+  dateHeureVisite: string;
+  typeVisite: 'telephone' | 'visio' | 'presentiel';
 }
