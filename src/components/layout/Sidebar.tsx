@@ -54,20 +54,10 @@ const Sidebar: React.FC = () => {
       badge: 12
     },
     {
-      label: "Employés",
-      href: "/employes",
-      icon: User,
-      badge: 18
-    },
-    {
-      label: "Partenaires",
-      href: "/partenaires",
-      icon: Users
-    },
-    {
-      label: "Recherche",
-      href: "/recherche",
-      icon: Search
+      label: "Stages",
+      href: "/stages",
+      icon: Briefcase,
+      badge: 156
     }
   ];
 
