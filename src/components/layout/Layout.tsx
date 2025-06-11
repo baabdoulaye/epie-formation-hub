@@ -2,9 +2,10 @@
 import React from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
+import { Toaster } from "@/components/ui/toaster";
 
 /**
- * Props pour le composant Layout
+ * Interface pour les props du Layout
  */
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,28 +14,30 @@ interface LayoutProps {
 /**
  * Composant Layout - Structure principale de l'application
  * 
- * Combine le header, la sidebar et le contenu principal
- * avec une gestion responsive appropriée
+ * Organise l'interface avec l'en-tête, la barre latérale et le contenu principal
+ * Fournit une structure cohérente pour toutes les pages de l'application
  */
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header fixe en haut */}
+      {/* En-tête fixe */}
       <Header />
       
-      {/* Container principal avec sidebar et contenu */}
+      {/* Conteneur principal avec sidebar et contenu */}
       <div className="flex">
-        {/* Sidebar de navigation */}
+        {/* Barre latérale de navigation */}
         <Sidebar />
         
-        {/* Contenu principal */}
-        <main className="flex-1 lg:ml-64 p-6 pt-6">
-          {/* Container avec largeur maximale et centrage */}
-          <div className="max-w-7xl mx-auto">
+        {/* Zone de contenu principal */}
+        <main className="flex-1 lg:ml-64 pt-16">
+          <div className="p-6">
             {children}
           </div>
         </main>
       </div>
+      
+      {/* Toaster pour les notifications */}
+      <Toaster />
     </div>
   );
 };
