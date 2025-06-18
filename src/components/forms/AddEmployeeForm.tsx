@@ -109,6 +109,7 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onBack }) => {
                 <option value="Direction">Direction</option>
                 <option value="Pédagogie">Pédagogie</option>
                 <option value="Administration">Administration</option>
+                <option value="Autres">Autres</option>
               </select>
             </div>
           </div>
