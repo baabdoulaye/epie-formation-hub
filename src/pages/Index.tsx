@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -109,6 +110,13 @@ const Index: React.FC = () => {
     }
   };
 
+  const handleViewAllSessions = () => {
+    toast({
+      title: "Toutes les Sessions",
+      description: "Redirection vers la liste complète des sessions",
+    });
+  };
+
   return (
     <Layout>
       <div className="space-y-8">
@@ -188,7 +196,7 @@ const Index: React.FC = () => {
           <Card className="lg:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Sessions Récentes</CardTitle>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleViewAllSessions}>
                 Voir Toutes
               </Button>
             </CardHeader>

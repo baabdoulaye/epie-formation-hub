@@ -1,9 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { File, Search, Calendar } from 'lucide-react';
+import AddTrainingForm from '@/components/forms/AddTrainingForm';
+import { useToast } from "@/hooks/use-toast";
 
 /**
  * Page Trainings - Gestion des formations
@@ -12,6 +14,35 @@ import { File, Search, Calendar } from 'lucide-react';
  * proposées par EPIE Formation
  */
 const Trainings: React.FC = () => {
+  const [showForm, setShowForm] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const { toast } = useToast();
+
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    if (value.trim()) {
+      toast({
+        title: "Recherche de formations",
+        description: `Recherche pour: "${value}"`,
+      });
+    }
+  };
+
+  const handleScheduleSession = () => {
+    toast({
+      title: "Planifier une Session",
+      description: "Fonctionnalité en cours de développement",
+    });
+  };
+
+  if (showForm) {
+    return (
+      <Layout>
+        <AddTrainingForm onBack={() => setShowForm(false)} />
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -25,7 +56,10 @@ const Trainings: React.FC = () => {
               12 formations disponibles • 8 sessions actives
             </p>
           </div>
-          <Button className="bg-secondary hover:bg-secondary/90 text-secondary-foreground">
+          <Button 
+            className="bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+            onClick={() => setShowForm(true)}
+          >
             <File className="mr-2 h-4 w-4" />
             Créer une Formation
           </Button>
@@ -85,6 +119,8 @@ const Trainings: React.FC = () => {
                 <input
                   type="text"
                   placeholder="Rechercher une formation..."
+                  value={searchTerm}
+                  onChange={(e) => handleSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
@@ -118,11 +154,14 @@ const Trainings: React.FC = () => {
               Créez de nouvelles formations, planifiez des sessions et suivez les inscriptions.
             </p>
             <div className="flex justify-center space-x-4">
-              <Button variant="outline">
+              <Button variant="outline" onClick={handleScheduleSession}>
                 <Calendar className="mr-2 h-4 w-4" />
                 Planifier une Session
               </Button>
-              <Button className="bg-secondary hover:bg-secondary/90 text-secondary-foreground">
+              <Button 
+                className="bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+                onClick={() => setShowForm(true)}
+              >
                 <File className="mr-2 h-4 w-4" />
                 Nouvelle Formation
               </Button>

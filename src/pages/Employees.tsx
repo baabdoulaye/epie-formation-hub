@@ -1,15 +1,21 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Layout from '../components/layout/Layout';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Plus, Search, Filter } from "lucide-react";
+import AddEmployeeForm from '@/components/forms/AddEmployeeForm';
+import { useToast } from "@/hooks/use-toast";
 
 /**
  * Page Employés - Gestion du personnel EPIE
  */
 const Employees: React.FC = () => {
+  const [showForm, setShowForm] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const { toast } = useToast();
+
   // Données d'exemple pour les employés
   const employees = [
     {
@@ -47,6 +53,38 @@ const Employees: React.FC = () => {
     }
   ];
 
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    if (value.trim()) {
+      toast({
+        title: "Recherche d'employés",
+        description: `Recherche pour: "${value}"`,
+      });
+    }
+  };
+
+  const handleViewEmployee = (employee: any) => {
+    toast({
+      title: "Voir Employé",
+      description: `Affichage du profil de ${employee.prenom} ${employee.nom}`,
+    });
+  };
+
+  const handleEditEmployee = (employee: any) => {
+    toast({
+      title: "Modifier Employé",
+      description: `Modification du profil de ${employee.prenom} ${employee.nom}`,
+    });
+  };
+
+  if (showForm) {
+    return (
+      <Layout>
+        <AddEmployeeForm onBack={() => setShowForm(false)} />
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -58,7 +96,7 @@ const Employees: React.FC = () => {
               Gestion du personnel et des équipes EPIE
             </p>
           </div>
-          <Button className="flex items-center gap-2">
+          <Button className="flex items-center gap-2" onClick={() => setShowForm(true)}>
             <Plus className="h-4 w-4" />
             Nouvel Employé
           </Button>
@@ -134,6 +172,8 @@ const Employees: React.FC = () => {
                 <input
                   type="text"
                   placeholder="Rechercher un employé..."
+                  value={searchTerm}
+                  onChange={(e) => handleSearch(e.target.value)}
                   className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
                 />
               </div>
@@ -194,10 +234,18 @@ const Employees: React.FC = () => {
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex space-x-2">
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleViewEmployee(employee)}
+                          >
                             Voir
                           </Button>
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleEditEmployee(employee)}
+                          >
                             Modifier
                           </Button>
                         </div>

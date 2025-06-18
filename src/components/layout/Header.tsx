@@ -10,29 +10,33 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import NotificationPanel from './NotificationPanel';
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 /**
  * Composant Header - Barre de navigation principale
  * 
  * Affiche le logo EPIE Connect, la barre de recherche,
- * les notifications et le menu utilisateur
+ * et le menu utilisateur
  */
 const Header: React.FC = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleProfileClick = () => {
-    toast({
-      title: "Mon Profil",
-      description: "Cette fonctionnalité sera bientôt disponible.",
-    });
+  const handleSearch = (searchTerm: string) => {
+    if (searchTerm.trim()) {
+      toast({
+        title: "Recherche",
+        description: `Recherche pour: "${searchTerm}"`,
+      });
+    }
   };
 
-  const handleSettingsClick = () => {
+  const handleProfileClick = () => {
+    navigate('/employes');
     toast({
-      title: "Paramètres",
-      description: "Cette fonctionnalité sera bientôt disponible.",
+      title: "Mon Profil",
+      description: "Redirection vers la gestion des employés",
     });
   };
 
@@ -69,12 +73,9 @@ const Header: React.FC = () => {
               type="text"
               placeholder="Rechercher..."
               className="pl-10 pr-4 py-2 w-64 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
-              onChange={(e) => {
-                if (e.target.value) {
-                  toast({
-                    title: "Recherche",
-                    description: "Fonctionnalité de recherche en cours de développement.",
-                  });
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleSearch(e.currentTarget.value);
                 }
               }}
             />
@@ -83,9 +84,6 @@ const Header: React.FC = () => {
 
         {/* Actions utilisateur */}
         <div className="flex items-center space-x-2 ml-4">
-          {/* Bouton notifications */}
-          <NotificationPanel />
-
           {/* Menu utilisateur */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -108,9 +106,6 @@ const Header: React.FC = () => {
               <DropdownMenuItem className="cursor-pointer" onClick={handleProfileClick}>
                 <User className="mr-2 h-4 w-4" />
                 Mon Profil
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" onClick={handleSettingsClick}>
-                Paramètres
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="cursor-pointer text-red-600" onClick={handleLogoutClick}>
