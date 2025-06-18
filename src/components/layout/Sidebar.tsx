@@ -45,7 +45,7 @@ const Sidebar: React.FC = () => {
       label: "Stagiaires",
       href: "/stagiaires",
       icon: Users,
-      badge: 245 // Exemple de badge avec le nombre de stagiaires
+      badge: 245
     },
     {
       label: "Formations",
@@ -64,6 +64,12 @@ const Sidebar: React.FC = () => {
       href: "/employes",
       icon: User,
       badge: 15
+    },
+    {
+      label: "Partenaires",
+      href: "/partenaires",
+      icon: Users,
+      badge: 24
     }
   ];
 

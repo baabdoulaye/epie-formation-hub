@@ -10,6 +10,7 @@ import Internships from "./pages/Internships";
 import Employees from "./pages/Employees";
 import NotFound from "./pages/NotFound";
 import Sessions from "./pages/Sessions";
+import Partners from "./pages/Partners";
 
 /**
  * Configuration du client React Query pour la gestion d'état
@@ -59,6 +60,9 @@ const App = () => (
           
           {/* Sessions de formation */}
           <Route path="/sessions" element={<Sessions />} />
+          
+          {/* Gestion des partenaires */}
+          <Route path="/partenaires" element={<Partners />} />
           
           {/* Route catch-all pour les pages non trouvées */}
           <Route path="*" element={<NotFound />} />

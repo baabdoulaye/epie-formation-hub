@@ -96,10 +96,7 @@ const Index: React.FC = () => {
         navigate('/formations');
         break;
       case 'schedule-session':
-        toast({
-          title: "Planifier une Session",
-          description: "Fonctionnalité en cours de développement",
-        });
+        navigate('/sessions');
         break;
       case 'manage-users':
         navigate('/employes');
