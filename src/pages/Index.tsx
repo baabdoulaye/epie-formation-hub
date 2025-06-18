@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -111,10 +110,7 @@ const Index: React.FC = () => {
   };
 
   const handleViewAllSessions = () => {
-    toast({
-      title: "Toutes les Sessions",
-      description: "Redirection vers la liste complète des sessions",
-    });
+    navigate('/sessions');
   };
 
   return (

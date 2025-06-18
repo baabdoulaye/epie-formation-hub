@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +9,7 @@ import Trainings from "./pages/Trainings";
 import Internships from "./pages/Internships";
 import Employees from "./pages/Employees";
 import NotFound from "./pages/NotFound";
+import Sessions from "./pages/Sessions";
 
 /**
  * Configuration du client React Query pour la gestion d'état
@@ -57,12 +57,8 @@ const App = () => (
           {/* Gestion des employés */}
           <Route path="/employes" element={<Employees />} />
           
-          {/* Pages à ajouter dans les prochaines versions */}
-          {/* <Route path="/partenaires" element={<Partners />} /> */}
-          {/* <Route path="/recherche" element={<Search />} /> */}
-          {/* <Route path="/calendrier" element={<Calendar />} /> */}
-          {/* <Route path="/profil" element={<Profile />} /> */}
-          {/* <Route path="/login" element={<Login />} /> */}
+          {/* Sessions de formation */}
+          <Route path="/sessions" element={<Sessions />} />
           
           {/* Route catch-all pour les pages non trouvées */}
           <Route path="*" element={<NotFound />} />

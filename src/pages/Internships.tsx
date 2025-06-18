@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Layout from '@/components/layout/Layout';
 import AddInternshipForm from '@/components/internships/AddInternshipForm';
@@ -196,23 +195,19 @@ const Internships: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Message temporaire pour la construction */}
+        {/* Suivi des stages - section renommée */}
         <Card className="text-center py-12">
           <CardContent>
             <Briefcase className="mx-auto h-16 w-16 text-gray-400 mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Suivi des Stages EPIE Formation
+              Suivi des Stages
             </h3>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              Cette section permet de gérer tous les stages effectués par vos stagiaires. 
-              Enregistrez les informations complètes des stages, suivez les visites et maintenez 
+              Cette section affiche tous les stages effectués par vos stagiaires. 
+              Consultez les informations complètes des stages, suivez les visites et maintenez 
               le contact avec les entreprises partenaires.
             </p>
             <div className="flex justify-center space-x-4">
-              <Button variant="outline">
-                <Search className="mr-2 h-4 w-4" />
-                Voir Tous les Stages
-              </Button>
               <Button onClick={() => setShowAddForm(true)}>
                 <Plus className="mr-2 h-4 w-4" />
                 Ajouter un Stage

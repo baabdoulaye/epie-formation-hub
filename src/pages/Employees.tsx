@@ -25,8 +25,7 @@ const Employees: React.FC = () => {
       poste: 'Directrice',
       service: 'Direction',
       email: 'marie.dubois@epie.fr',
-      telephone: '01 23 45 67 89',
-      statut: 'Actif'
+      telephone: '01 23 45 67 89'
     },
     {
       id: 2,
@@ -36,8 +35,7 @@ const Employees: React.FC = () => {
       poste: 'Formateur',
       service: 'Pédagogie',
       email: 'pierre.martin@epie.fr',
-      telephone: '01 23 45 67 90',
-      statut: 'Actif'
+      telephone: '01 23 45 67 90'
     },
     {
       id: 3,
@@ -47,8 +45,7 @@ const Employees: React.FC = () => {
       poste: 'Coordinatrice',
       service: 'Administration',
       email: 'sophie.leroy@epie.fr',
-      telephone: '01 23 45 67 91',
-      statut: 'Congé'
+      telephone: '01 23 45 67 91'
     }
   ];
 
@@ -101,8 +98,8 @@ const Employees: React.FC = () => {
           </Button>
         </div>
 
-        {/* Statistiques rapides */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Statistiques rapides (sans la section "En congé") */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
@@ -119,28 +116,12 @@ const Employees: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center">
                 <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <span className="text-green-600 font-bold text-sm">A</span>
+                  <span className="text-green-600 font-bold text-sm">F</span>
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Actifs</p>
+                  <p className="text-sm font-medium text-gray-600">Formateurs</p>
                   <p className="text-2xl font-bold">
-                    {employees.filter(emp => emp.statut === 'Actif').length}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="h-8 w-8 bg-orange-100 rounded-full flex items-center justify-center">
-                  <span className="text-orange-600 font-bold text-sm">C</span>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">En Congé</p>
-                  <p className="text-2xl font-bold">
-                    {employees.filter(emp => emp.statut === 'Congé').length}
+                    {employees.filter(emp => emp.poste.includes('Formateur')).length}
                   </p>
                 </div>
               </div>
@@ -162,7 +143,7 @@ const Employees: React.FC = () => {
           </Card>
         </div>
 
-        {/* Barre de recherche sans filtres */}
+        {/* Barre de recherche */}
         <Card>
           <CardContent className="p-6">
             <div className="relative">
@@ -178,7 +159,7 @@ const Employees: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Liste des employés */}
+        {/* Liste des employés (sans la colonne Statut) */}
         <Card>
           <CardHeader>
             <CardTitle>Liste des Employés</CardTitle>
@@ -192,7 +173,6 @@ const Employees: React.FC = () => {
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Poste</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Service</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Contact</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Statut</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Actions</th>
                   </tr>
                 </thead>
@@ -217,13 +197,6 @@ const Employees: React.FC = () => {
                           <p className="text-gray-900">{employee.email}</p>
                           <p className="text-gray-600">{employee.telephone}</p>
                         </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <Badge 
-                          variant={employee.statut === 'Actif' ? 'default' : 'secondary'}
-                        >
-                          {employee.statut}
-                        </Badge>
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex space-x-2">

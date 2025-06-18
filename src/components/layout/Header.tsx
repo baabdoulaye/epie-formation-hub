@@ -2,25 +2,23 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
 /**
  * Composant Header - Barre de navigation principale
  * 
- * Affiche le logo EPIE Connect et le menu utilisateur simplifié
+ * Affiche le logo EPIE Connect, le nom d'utilisateur et le bouton de déconnexion
  */
 const Header: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Données utilisateur mockées (à remplacer par de vraies données API)
+  const currentUser = {
+    prenom: "Marie",
+    nom: "Dubois"
+  };
 
   const handleLogoutClick = () => {
     toast({
@@ -47,8 +45,14 @@ const Header: React.FC = () => {
         {/* Espace flexible pour pousser les éléments vers la droite */}
         <div className="flex-1" />
 
-        {/* Actions utilisateur - Uniquement déconnexion */}
-        <div className="flex items-center space-x-2 ml-4">
+        {/* Nom d'utilisateur et bouton déconnexion */}
+        <div className="flex items-center space-x-4 ml-4">
+          <div className="text-right">
+            <p className="text-sm font-medium text-gray-900">
+              {currentUser.prenom} {currentUser.nom}
+            </p>
+            <p className="text-xs text-gray-500">Utilisateur connecté</p>
+          </div>
           <Button 
             variant="outline" 
             size="sm"
