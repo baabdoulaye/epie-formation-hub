@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import {
   Form,
@@ -19,7 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarIcon, User, MapPin, GraduationCap, FileText, Users } from 'lucide-react';
+import { User, MapPin, GraduationCap, FileText, Users } from 'lucide-react';
 
 /**
  * Schéma de validation pour le formulaire d'ajout de stagiaire
@@ -79,6 +78,7 @@ type StudentFormValues = z.infer<typeof studentFormSchema>;
 interface AddStudentFormProps {
   onSubmit: (data: StudentFormValues) => void;
   onCancel: () => void;
+  initialData?: any;
 }
 
 /**
@@ -87,7 +87,7 @@ interface AddStudentFormProps {
  * Ce formulaire permet de saisir toutes les informations détaillées
  * d'un nouveau stagiaire selon les spécifications d'EPIE Formation
  */
-const AddStudentForm: React.FC<AddStudentFormProps> = ({ onSubmit, onCancel }) => {
+const AddStudentForm: React.FC<AddStudentFormProps> = ({ onSubmit, onCancel, initialData }) => {
   const form = useForm<StudentFormValues>({
     resolver: zodResolver(studentFormSchema),
     defaultValues: {
@@ -117,6 +117,38 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({ onSubmit, onCancel }) =
       candidateInformation: '',
     },
   });
+
+  useEffect(() => {
+    if (initialData) {
+      // Map initialData to form structure
+      form.reset({
+        firstName: initialData.prenom || '',
+        lastName: initialData.nom || '',
+        email: initialData.email || '',
+        phone: initialData.phone || '',
+        birthDate: initialData.birthDate || '',
+        age: initialData.age || 18,
+        address: initialData.address || '',
+        postalCode: initialData.postalCode || '',
+        city: initialData.city || '',
+        department: initialData.department || '',
+        birthCity: initialData.birthCity || '',
+        birthCountry: initialData.birthCountry || 'France',
+        prescribingOrganization: initialData.prescribingOrganization || '',
+        prescribingCity: initialData.prescribingCity || '',
+        educationLevel: initialData.educationLevel || '',
+        infoCollectiveDate: initialData.infoCollectiveDate || '',
+        presentAtInfoCollective: initialData.presentAtInfoCollective || false,
+        presentAtIndividualInterview: initialData.presentAtIndividualInterview || false,
+        positioning: initialData.positioning || '',
+        centerDecision: initialData.centerDecision || '',
+        result: initialData.result || '',
+        pathway1: initialData.pathway1 || '',
+        pathway2: initialData.pathway2 || '',
+        candidateInformation: initialData.candidateInformation || '',
+      });
+    }
+  }, [initialData, form]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -577,7 +609,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({ onSubmit, onCancel }) =
               type="submit"
               className="px-8 bg-primary hover:bg-primary/90"
             >
-              Ajouter le Stagiaire
+              {initialData ? 'Modifier le Stagiaire' : 'Ajouter le Stagiaire'}
             </Button>
           </div>
         </form>

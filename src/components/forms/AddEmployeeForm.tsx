@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,9 +8,11 @@ import { ArrowLeft } from "lucide-react";
 
 interface AddEmployeeFormProps {
   onBack: () => void;
+  initialData?: any;
+  onSubmit: (data: any) => void;
 }
 
-const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onBack }) => {
+const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onBack, initialData, onSubmit }) => {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     civilite: '',
@@ -22,13 +24,15 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onBack }) => {
     telephone: ''
   });
 
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
+    }
+  }, [initialData]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Employé ajouté",
-      description: `${formData.prenom} ${formData.nom} a été ajouté avec succès.`,
-    });
-    onBack();
+    onSubmit(formData);
   };
 
   const handleChange = (field: string, value: string) => {
@@ -45,7 +49,9 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onBack }) => {
           <Button variant="ghost" size="sm" onClick={onBack}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <CardTitle>Ajouter un Nouvel Employé</CardTitle>
+          <CardTitle>
+            {initialData ? 'Modifier l\'Employé' : 'Ajouter un Nouvel Employé'}
+          </CardTitle>
         </div>
       </CardHeader>
       <CardContent>
@@ -139,7 +145,9 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onBack }) => {
           </div>
           
           <div className="flex space-x-4">
-            <Button type="submit">Ajouter l'Employé</Button>
+            <Button type="submit">
+              {initialData ? 'Modifier l\'Employé' : 'Ajouter l\'Employé'}
+            </Button>
             <Button type="button" variant="outline" onClick={onBack}>
               Annuler
             </Button>

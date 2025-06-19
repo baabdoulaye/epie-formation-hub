@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -25,9 +25,10 @@ type PartnerFormData = z.infer<typeof partnerSchema>;
 interface AddPartnerFormProps {
   onSubmit: (data: PartnerFormData) => void;
   onCancel: () => void;
+  initialData?: any;
 }
 
-const AddPartnerForm: React.FC<AddPartnerFormProps> = ({ onSubmit, onCancel }) => {
+const AddPartnerForm: React.FC<AddPartnerFormProps> = ({ onSubmit, onCancel, initialData }) => {
   const {
     register,
     handleSubmit,
@@ -36,6 +37,12 @@ const AddPartnerForm: React.FC<AddPartnerFormProps> = ({ onSubmit, onCancel }) =
   } = useForm<PartnerFormData>({
     resolver: zodResolver(partnerSchema),
   });
+
+  useEffect(() => {
+    if (initialData) {
+      reset(initialData);
+    }
+  }, [initialData, reset]);
 
   const handleFormSubmit = (data: PartnerFormData) => {
     onSubmit(data);
@@ -47,7 +54,9 @@ const AddPartnerForm: React.FC<AddPartnerFormProps> = ({ onSubmit, onCancel }) =
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <Building2 className="h-6 w-6 text-primary" />
-          <span>Ajouter un Nouveau Partenaire</span>
+          <span>
+            {initialData ? 'Modifier le Partenaire' : 'Ajouter un Nouveau Partenaire'}
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -182,7 +191,12 @@ const AddPartnerForm: React.FC<AddPartnerFormProps> = ({ onSubmit, onCancel }) =
               className="flex items-center space-x-2"
             >
               <Save className="h-4 w-4" />
-              <span>{isSubmitting ? 'Ajout...' : 'Ajouter le Partenaire'}</span>
+              <span>
+                {isSubmitting 
+                  ? (initialData ? 'Modification...' : 'Ajout...')
+                  : (initialData ? 'Modifier le Partenaire' : 'Ajouter le Partenaire')
+                }
+              </span>
             </Button>
           </div>
         </form>
