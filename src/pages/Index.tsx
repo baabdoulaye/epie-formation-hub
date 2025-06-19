@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import StatsCard from '@/components/dashboard/StatsCard';
 import ChartCard from '@/components/dashboard/ChartCard';
-import { Users, Calendar, User, File } from 'lucide-react';
+import { Users, Calendar, User, File, BookOpen, Building } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -129,32 +129,32 @@ const Index: React.FC = () => {
             title="Stagiaires"
             value="245"
             subtitle="15 nouveaux ce mois"
-            icon="users"
-            trend={8}
+            icon={Users}
+            trend={{ value: 8, isPositive: true }}
             color="blue"
           />
           <StatsCard
             title="Formations Actives"
             value="12"
             subtitle="3 commencent bientôt"
-            icon="book"
-            trend={12}
+            icon={BookOpen}
+            trend={{ value: 12, isPositive: true }}
             color="green"
           />
           <StatsCard
             title="Employés"
             value="15"
             subtitle="Équipe pédagogique"
-            icon="user"
-            trend={0}
+            icon={User}
+            trend={{ value: 0, isPositive: true }}
             color="purple"
           />
           <StatsCard
             title="Partenaires"
             value="24"
             subtitle="Réseau de partenaires"
-            icon="building"
-            trend={5}
+            icon={Building}
+            trend={{ value: 5, isPositive: true }}
             color="orange"
           />
         </div>
