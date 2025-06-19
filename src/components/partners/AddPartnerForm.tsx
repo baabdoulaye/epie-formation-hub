@@ -8,16 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Building2, Mail, Phone, MapPin, Save, X, Globe } from 'lucide-react';
+import { Building2, Save, X, Globe } from 'lucide-react';
 
 const partnerSchema = z.object({
   nom: z.string().min(1, "Le nom de l'organisation est requis"),
   typePartenaire: z.string().min(1, "Le type de partenaire est requis"),
   secteurActivite: z.string().min(1, "Le secteur d'activité est requis"),
-  contactPrincipal: z.string().min(1, "Le contact principal est requis"),
-  email: z.string().email("Format d'email invalide"),
-  telephone: z.string().min(1, "Le téléphone est requis"),
-  adresse: z.string().min(1, "L'adresse est requise"),
   ville: z.string().min(1, "La ville est requise"),
   codePostal: z.string().regex(/^\d{5}$/, "Le code postal doit contenir 5 chiffres"),
   siteWeb: z.string().url("Format d'URL invalide").optional().or(z.literal("")),
@@ -91,117 +87,52 @@ const AddPartnerForm: React.FC<AddPartnerFormProps> = ({ onSubmit, onCancel }) =
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="secteurActivite">Secteur d'Activité *</Label>
-              <select
-                id="secteurActivite"
-                {...register('secteurActivite')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                <option value="">Sélectionner un secteur</option>
-                <option value="emploi-insertion">Emploi et Insertion</option>
-                <option value="formation-professionnelle">Formation Professionnelle</option>
-                <option value="numerique-technologie">Numérique et Technologie</option>
-                <option value="industrie">Industrie</option>
-                <option value="services">Services</option>
-                <option value="sante-social">Santé et Social</option>
-                <option value="commerce">Commerce</option>
-                <option value="public">Public</option>
-              </select>
-              {errors.secteurActivite && (
-                <p className="text-sm text-red-600">{errors.secteurActivite.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="contactPrincipal">Contact Principal *</Label>
-              <Input
-                id="contactPrincipal"
-                {...register('contactPrincipal')}
-                placeholder="Nom du responsable ou contact"
-              />
-              {errors.contactPrincipal && (
-                <p className="text-sm text-red-600">{errors.contactPrincipal.message}</p>
-              )}
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="secteurActivite">Secteur d'Activité *</Label>
+            <select
+              id="secteurActivite"
+              {...register('secteurActivite')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="">Sélectionner un secteur</option>
+              <option value="emploi-insertion">Emploi et Insertion</option>
+              <option value="formation-professionnelle">Formation Professionnelle</option>
+              <option value="numerique-technologie">Numérique et Technologie</option>
+              <option value="industrie">Industrie</option>
+              <option value="services">Services</option>
+              <option value="sante-social">Santé et Social</option>
+              <option value="commerce">Commerce</option>
+              <option value="public">Public</option>
+            </select>
+            {errors.secteurActivite && (
+              <p className="text-sm text-red-600">{errors.secteurActivite.message}</p>
+            )}
           </div>
 
-          {/* Coordonnées */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="flex items-center space-x-1">
-                <Mail className="h-4 w-4" />
-                <span>Email *</span>
-              </Label>
+          {/* Localisation */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-2 space-y-2">
+              <Label htmlFor="ville">Ville *</Label>
               <Input
-                id="email"
-                type="email"
-                {...register('email')}
-                placeholder="contact@partenaire.fr"
+                id="ville"
+                {...register('ville')}
+                placeholder="Ville"
               />
-              {errors.email && (
-                <p className="text-sm text-red-600">{errors.email.message}</p>
+              {errors.ville && (
+                <p className="text-sm text-red-600">{errors.ville.message}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="telephone" className="flex items-center space-x-1">
-                <Phone className="h-4 w-4" />
-                <span>Téléphone *</span>
-              </Label>
+              <Label htmlFor="codePostal">Code Postal *</Label>
               <Input
-                id="telephone"
-                {...register('telephone')}
-                placeholder="03 XX XX XX XX"
+                id="codePostal"
+                {...register('codePostal')}
+                placeholder="59000"
               />
-              {errors.telephone && (
-                <p className="text-sm text-red-600">{errors.telephone.message}</p>
+              {errors.codePostal && (
+                <p className="text-sm text-red-600">{errors.codePostal.message}</p>
               )}
-            </div>
-          </div>
-
-          {/* Adresse */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="adresse" className="flex items-center space-x-1">
-                <MapPin className="h-4 w-4" />
-                <span>Adresse *</span>
-              </Label>
-              <Input
-                id="adresse"
-                {...register('adresse')}
-                placeholder="Numéro et nom de rue"
-              />
-              {errors.adresse && (
-                <p className="text-sm text-red-600">{errors.adresse.message}</p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="md:col-span-2 space-y-2">
-                <Label htmlFor="ville">Ville *</Label>
-                <Input
-                  id="ville"
-                  {...register('ville')}
-                  placeholder="Ville"
-                />
-                {errors.ville && (
-                  <p className="text-sm text-red-600">{errors.ville.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="codePostal">Code Postal *</Label>
-                <Input
-                  id="codePostal"
-                  {...register('codePostal')}
-                  placeholder="59000"
-                />
-                {errors.codePostal && (
-                  <p className="text-sm text-red-600">{errors.codePostal.message}</p>
-                )}
-              </div>
             </div>
           </div>
 

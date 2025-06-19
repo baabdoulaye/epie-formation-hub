@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, Clock, Users, MapPin, Save, X } from 'lucide-react';
+import { Calendar, MapPin, Save, X } from 'lucide-react';
 
 const sessionSchema = z.object({
   title: z.string().min(1, "Le titre est requis"),
@@ -16,10 +16,7 @@ const sessionSchema = z.object({
   formateur: z.string().min(1, "Le formateur est requis"),
   dateDebut: z.string().min(1, "La date de début est requise"),
   dateFin: z.string().min(1, "La date de fin est requise"),
-  heureDebut: z.string().min(1, "L'heure de début est requise"),
-  heureFin: z.string().min(1, "L'heure de fin est requise"),
   lieu: z.string().min(1, "Le lieu est requis"),
-  capaciteMax: z.number().min(1, "La capacité maximale doit être supérieure à 0"),
   description: z.string().optional(),
 });
 
@@ -126,8 +123,8 @@ const AddSessionForm: React.FC<AddSessionFormProps> = ({ onSubmit, onCancel }) =
             </div>
           </div>
 
-          {/* Dates et heures */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Dates */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="dateDebut">Date de Début *</Label>
               <Input
@@ -151,63 +148,17 @@ const AddSessionForm: React.FC<AddSessionFormProps> = ({ onSubmit, onCancel }) =
                 <p className="text-sm text-red-600">{errors.dateFin.message}</p>
               )}
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="heureDebut" className="flex items-center space-x-1">
-                <Clock className="h-4 w-4" />
-                <span>Heure Début *</span>
-              </Label>
-              <Input
-                id="heureDebut"
-                type="time"
-                {...register('heureDebut')}
-              />
-              {errors.heureDebut && (
-                <p className="text-sm text-red-600">{errors.heureDebut.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="heureFin">Heure Fin *</Label>
-              <Input
-                id="heureFin"
-                type="time"
-                {...register('heureFin')}
-              />
-              {errors.heureFin && (
-                <p className="text-sm text-red-600">{errors.heureFin.message}</p>
-              )}
-            </div>
           </div>
 
-          {/* Capacité et description */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="capaciteMax" className="flex items-center space-x-1">
-                <Users className="h-4 w-4" />
-                <span>Capacité Maximale *</span>
-              </Label>
-              <Input
-                id="capaciteMax"
-                type="number"
-                min="1"
-                {...register('capaciteMax', { valueAsNumber: true })}
-                placeholder="Ex: 15"
-              />
-              {errors.capaciteMax && (
-                <p className="text-sm text-red-600">{errors.capaciteMax.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Description (optionnelle)</Label>
-              <Textarea
-                id="description"
-                {...register('description')}
-                placeholder="Informations complémentaires sur la session..."
-                rows={3}
-              />
-            </div>
+          {/* Description */}
+          <div className="space-y-2">
+            <Label htmlFor="description">Description (optionnelle)</Label>
+            <Textarea
+              id="description"
+              {...register('description')}
+              placeholder="Informations complémentaires sur la session..."
+              rows={3}
+            />
           </div>
 
           {/* Boutons d'action */}

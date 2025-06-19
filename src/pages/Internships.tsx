@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Layout from '@/components/layout/Layout';
 import AddInternshipForm from '@/components/internships/AddInternshipForm';
@@ -6,48 +7,40 @@ import { Button } from "@/components/ui/button";
 import { Briefcase, Search, Plus, ArrowLeft, Building, User, Calendar } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
-/**
- * Page Internships - Gestion des stages
- * 
- * Interface pour visualiser, rechercher et gérer tous les stages
- * effectués par les stagiaires d'EPIE Formation
- */
 const Internships: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
+  const [partnerCompanies, setPartnerCompanies] = useState<string[]>([
+    "Société Informatique du Nord",
+    "Digital Solutions SARL",
+    "TechnoServ Industries",
+    "Groupe Commercial Lille"
+  ]);
   const { toast } = useToast();
 
-  /**
-   * Gère la soumission du formulaire d'ajout de stage
-   * @param data - Données du formulaire validées
-   */
   const handleAddInternship = (data: any) => {
     console.log('Données du nouveau stage:', data);
     
-    // Ici, vous intégreriez l'appel API pour sauvegarder le stage
-    // Exemple : await api.internships.create(data);
+    // Ajouter l'entreprise à la liste des partenaires si elle n'y est pas déjà
+    if (data.entreprise && !partnerCompanies.includes(data.entreprise)) {
+      setPartnerCompanies(prev => [...prev, data.entreprise]);
+    }
     
     toast({
       title: "Stage ajouté avec succès",
       description: `Le stage de ${data.prenom} ${data.nom} chez ${data.entreprise} a été enregistré.`,
     });
     
-    // Retour à la liste des stages
     setShowAddForm(false);
   };
 
-  /**
-   * Gère l'annulation de l'ajout de stage
-   */
   const handleCancelAdd = () => {
     setShowAddForm(false);
   };
 
-  // Affichage du formulaire d'ajout
   if (showAddForm) {
     return (
       <Layout>
         <div className="space-y-6">
-          {/* En-tête avec bouton retour */}
           <div className="flex items-center space-x-4">
             <Button 
               variant="outline" 
@@ -67,7 +60,6 @@ const Internships: React.FC = () => {
             </div>
           </div>
 
-          {/* Formulaire d'ajout */}
           <AddInternshipForm 
             onSubmit={handleAddInternship}
             onCancel={handleCancelAdd}
@@ -77,7 +69,6 @@ const Internships: React.FC = () => {
     );
   }
 
-  // Affichage de la liste des stages
   return (
     <Layout>
       <div className="space-y-6">
@@ -124,7 +115,7 @@ const Internships: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Entreprises partenaires</p>
-                  <p className="text-xl font-semibold">89</p>
+                  <p className="text-xl font-semibold">{partnerCompanies.length}</p>
                 </div>
               </div>
             </CardContent>
@@ -158,6 +149,34 @@ const Internships: React.FC = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Section Entreprises Partenaires */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Building className="h-5 w-5 text-primary" />
+              <span>Entreprises Partenaires</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {partnerCompanies.map((company, index) => (
+                <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Building className="h-4 w-4 text-primary" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-900">{company}</span>
+                </div>
+              ))}
+            </div>
+            {partnerCompanies.length === 0 && (
+              <p className="text-gray-500 text-center py-4">
+                Aucune entreprise partenaire pour le moment. 
+                Ajoutez un stage pour voir les entreprises s'afficher ici.
+              </p>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Barre de recherche et filtres */}
         <Card>
@@ -195,7 +214,7 @@ const Internships: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Suivi des stages - section renommée */}
+        {/* Suivi des stages */}
         <Card className="text-center py-12">
           <CardContent>
             <Briefcase className="mx-auto h-16 w-16 text-gray-400 mb-4" />

@@ -126,38 +126,35 @@ const Index: React.FC = () => {
         {/* Cartes de statistiques principales */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatsCard
-            title="Stagiaires Actifs"
-            value={statsData.students.active}
-            subtitle={`${statsData.students.total} total`}
-            icon={Users}
-            trend={statsData.students.trend}
+            title="Stagiaires"
+            value="245"
+            subtitle="15 nouveaux ce mois"
+            icon="users"
+            trend={8}
             color="blue"
           />
-          
           <StatsCard
             title="Formations Actives"
-            value={statsData.trainings.active}
-            subtitle={`${statsData.trainings.total} total`}
-            icon={File}
-            trend={statsData.trainings.trend}
+            value="12"
+            subtitle="3 commencent bientôt"
+            icon="book"
+            trend={12}
             color="green"
           />
-          
           <StatsCard
-            title="Formateurs"
-            value={statsData.employees.trainers}
-            subtitle={`${statsData.employees.total} employés total`}
-            icon={User}
-            trend={statsData.employees.trend}
+            title="Employés"
+            value="15"
+            subtitle="Équipe pédagogique"
+            icon="user"
+            trend={0}
             color="purple"
           />
-          
           <StatsCard
-            title="Partenaires Actifs"
-            value={statsData.partners.active}
-            subtitle={`${statsData.partners.total} total`}
-            icon={Users}
-            trend={statsData.partners.trend}
+            title="Partenaires"
+            value="24"
+            subtitle="Réseau de partenaires"
+            icon="building"
+            trend={5}
             color="orange"
           />
         </div>
