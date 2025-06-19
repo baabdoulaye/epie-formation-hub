@@ -5,7 +5,7 @@ import AddPartnerForm from '@/components/partners/AddPartnerForm';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Building2, Search, Plus, ArrowLeft, Mail, Phone, Globe, MapPin, Edit } from 'lucide-react';
+import { Building2, Search, Plus, ArrowLeft, Mail, Phone, Globe, MapPin, Edit, Trash2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
 interface Partner {
@@ -24,10 +24,7 @@ const Partners: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const { toast } = useToast();
-
-  // Données mockées des partenaires
-  const mockPartners: Partner[] = [
+  const [partners, setPartners] = useState<Partner[]>([
     {
       id: '1',
       nom: 'Pôle Emploi Métropole Lilloise',
@@ -72,16 +69,22 @@ const Partners: React.FC = () => {
       description: 'Partenaire territorial pour les formations numériques',
       dateCreation: '2023-04-05'
     }
-  ];
+  ]);
+  const { toast } = useToast();
 
-  const filteredPartners = mockPartners.filter(partner =>
+  const filteredPartners = partners.filter(partner =>
     partner.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
     partner.typePartenaire.toLowerCase().includes(searchTerm.toLowerCase()) ||
     partner.secteurActivite.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleAddPartner = (data: any) => {
-    console.log('Nouveau partenaire:', data);
+    const newPartner: Partner = {
+      id: Date.now().toString(),
+      ...data,
+      dateCreation: new Date().toISOString()
+    };
+    setPartners([...partners, newPartner]);
     
     toast({
       title: "Partenaire ajouté avec succès",
@@ -92,7 +95,11 @@ const Partners: React.FC = () => {
   };
 
   const handleEditPartner = (data: any) => {
-    console.log('Partenaire modifié:', data);
+    setPartners(partners.map(partner => 
+      partner.id === editingPartner?.id 
+        ? { ...partner, ...data }
+        : partner
+    ));
     
     toast({
       title: "Partenaire modifié avec succès",
@@ -100,6 +107,16 @@ const Partners: React.FC = () => {
     });
     
     setEditingPartner(null);
+  };
+
+  const handleDeletePartner = (partnerId: string) => {
+    const partnerToDelete = partners.find(p => p.id === partnerId);
+    setPartners(partners.filter(partner => partner.id !== partnerId));
+    
+    toast({
+      title: "Partenaire supprimé",
+      description: `${partnerToDelete?.nom} a été supprimé de la liste.`,
+    });
   };
 
   const handleCancelAdd = () => {
@@ -183,6 +200,7 @@ const Partners: React.FC = () => {
           <AddPartnerForm 
             onSubmit={handleEditPartner}
             onCancel={handleCancelEdit}
+            initialData={editingPartner}
           />
         </div>
       </Layout>
@@ -280,14 +298,25 @@ const Partners: React.FC = () => {
                     <span className="text-xs text-gray-500">
                       Ajouté le {new Date(partner.dateCreation).toLocaleDateString('fr-FR')}
                     </span>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setEditingPartner(partner)}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Modifier
-                    </Button>
+                    <div className="flex space-x-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setEditingPartner(partner)}
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Modifier
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleDeletePartner(partner.id)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Supprimer
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardContent>

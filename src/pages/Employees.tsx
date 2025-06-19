@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import Layout from '../components/layout/Layout';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Plus, Search } from "lucide-react";
+import { Users, Plus, Edit, Trash2 } from "lucide-react";
 import AddEmployeeForm from '@/components/forms/AddEmployeeForm';
 import { useToast } from "@/hooks/use-toast";
 
@@ -12,11 +13,11 @@ import { useToast } from "@/hooks/use-toast";
  */
 const Employees: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [editingEmployee, setEditingEmployee] = useState<any>(null);
   const { toast } = useToast();
 
   // Données d'exemple pour les employés
-  const employees = [
+  const [employees, setEmployees] = useState([
     {
       id: 1,
       civilite: 'Mme',
@@ -47,36 +48,63 @@ const Employees: React.FC = () => {
       email: 'sophie.leroy@epie.fr',
       telephone: '01 23 45 67 91'
     }
-  ];
-
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    if (value.trim()) {
-      toast({
-        title: "Recherche d'employés",
-        description: `Recherche pour: "${value}"`,
-      });
-    }
-  };
-
-  const handleViewEmployee = (employee: any) => {
-    toast({
-      title: "Voir Employé",
-      description: `Affichage du profil de ${employee.prenom} ${employee.nom}`,
-    });
-  };
+  ]);
 
   const handleEditEmployee = (employee: any) => {
+    setEditingEmployee(employee);
+    setShowForm(true);
+  };
+
+  const handleDeleteEmployee = (employeeId: number) => {
+    const employeeToDelete = employees.find(emp => emp.id === employeeId);
+    setEmployees(employees.filter(emp => emp.id !== employeeId));
+    
     toast({
-      title: "Modifier Employé",
-      description: `Modification du profil de ${employee.prenom} ${employee.nom}`,
+      title: "Employé supprimé",
+      description: `${employeeToDelete?.prenom} ${employeeToDelete?.nom} a été supprimé.`,
     });
+  };
+
+  const handleSubmitEmployee = (data: any) => {
+    if (editingEmployee) {
+      // Modification
+      setEmployees(employees.map(emp => 
+        emp.id === editingEmployee.id 
+          ? { ...emp, ...data }
+          : emp
+      ));
+      toast({
+        title: "Employé modifié",
+        description: `${data.prenom} ${data.nom} a été mis à jour.`,
+      });
+    } else {
+      // Ajout
+      const newEmployee = {
+        id: Date.now(),
+        ...data
+      };
+      setEmployees([...employees, newEmployee]);
+      toast({
+        title: "Employé ajouté",
+        description: `${data.prenom} ${data.nom} a été ajouté.`,
+      });
+    }
+    
+    setShowForm(false);
+    setEditingEmployee(null);
   };
 
   if (showForm) {
     return (
       <Layout>
-        <AddEmployeeForm onBack={() => setShowForm(false)} />
+        <AddEmployeeForm 
+          onBack={() => {
+            setShowForm(false);
+            setEditingEmployee(null);
+          }}
+          initialData={editingEmployee}
+          onSubmit={handleSubmitEmployee}
+        />
       </Layout>
     );
   }
@@ -98,7 +126,7 @@ const Employees: React.FC = () => {
           </Button>
         </div>
 
-        {/* Statistiques rapides (sans la section "En congé") */}
+        {/* Statistiques rapides */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardContent className="p-6">
@@ -143,23 +171,7 @@ const Employees: React.FC = () => {
           </Card>
         </div>
 
-        {/* Barre de recherche */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Rechercher un employé..."
-                value={searchTerm}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Liste des employés (sans la colonne Statut) */}
+        {/* Liste des employés */}
         <Card>
           <CardHeader>
             <CardTitle>Liste des Employés</CardTitle>
@@ -203,16 +215,19 @@ const Employees: React.FC = () => {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => handleViewEmployee(employee)}
+                            onClick={() => handleEditEmployee(employee)}
                           >
-                            Voir
+                            <Edit className="h-4 w-4 mr-1" />
+                            Modifier
                           </Button>
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => handleEditEmployee(employee)}
+                            onClick={() => handleDeleteEmployee(employee.id)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
                           >
-                            Modifier
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Supprimer
                           </Button>
                         </div>
                       </td>

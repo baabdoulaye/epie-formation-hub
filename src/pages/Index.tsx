@@ -130,7 +130,6 @@ const Index: React.FC = () => {
             value="245"
             subtitle="15 nouveaux ce mois"
             icon={Users}
-            trend={{ value: 8, isPositive: true }}
             color="blue"
           />
           <StatsCard
@@ -138,7 +137,6 @@ const Index: React.FC = () => {
             value="12"
             subtitle="3 commencent bientôt"
             icon={BookOpen}
-            trend={{ value: 12, isPositive: true }}
             color="green"
           />
           <StatsCard
@@ -146,7 +144,6 @@ const Index: React.FC = () => {
             value="15"
             subtitle="Équipe pédagogique"
             icon={User}
-            trend={{ value: 0, isPositive: true }}
             color="purple"
           />
           <StatsCard
@@ -154,7 +151,6 @@ const Index: React.FC = () => {
             value="24"
             subtitle="Réseau de partenaires"
             icon={Building}
-            trend={{ value: 5, isPositive: true }}
             color="orange"
           />
         </div>

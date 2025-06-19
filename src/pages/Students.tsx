@@ -4,7 +4,7 @@ import Layout from '@/components/layout/Layout';
 import AddStudentForm from '@/components/students/AddStudentForm';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Search, User, ArrowLeft } from 'lucide-react';
+import { Users, Search, User, ArrowLeft, Edit } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
 /**
@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
  */
 const Students: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingStudent, setEditingStudent] = useState<any>(null);
   const { toast } = useToast();
 
   /**
@@ -37,14 +38,33 @@ const Students: React.FC = () => {
   };
 
   /**
-   * Gère l'annulation de l'ajout de stagiaire
+   * Gère la modification d'un stagiaire
    */
-  const handleCancelAdd = () => {
-    setShowAddForm(false);
+  const handleEditStudent = (data: any) => {
+    console.log('Données du stagiaire modifié:', data);
+    
+    toast({
+      title: "Stagiaire modifié avec succès",
+      description: `${data.firstName} ${data.lastName} a été mis à jour.`,
+    });
+    
+    setEditingStudent(null);
   };
 
-  // Affichage du formulaire d'ajout
-  if (showAddForm) {
+  /**
+   * Gère l'annulation de l'ajout/modification de stagiaire
+   */
+  const handleCancel = () => {
+    setShowAddForm(false);
+    setEditingStudent(null);
+  };
+
+  const handleEditStudentClick = (stagiaire: any) => {
+    setEditingStudent(stagiaire);
+  };
+
+  // Affichage du formulaire d'ajout ou de modification
+  if (showAddForm || editingStudent) {
     return (
       <Layout>
         <div className="space-y-6">
@@ -52,7 +72,7 @@ const Students: React.FC = () => {
           <div className="flex items-center space-x-4">
             <Button 
               variant="outline" 
-              onClick={handleCancelAdd}
+              onClick={handleCancel}
               className="flex items-center space-x-2"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -60,18 +80,22 @@ const Students: React.FC = () => {
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                Ajouter un Nouveau Stagiaire
+                {editingStudent ? 'Modifier le Stagiaire' : 'Ajouter un Nouveau Stagiaire'}
               </h1>
               <p className="text-gray-600 mt-1">
-                Remplissez tous les champs requis pour créer le profil complet du stagiaire
+                {editingStudent 
+                  ? `Modifiez les informations de ${editingStudent.prenom} ${editingStudent.nom}`
+                  : 'Remplissez tous les champs requis pour créer le profil complet du stagiaire'
+                }
               </p>
             </div>
           </div>
 
-          {/* Formulaire d'ajout */}
+          {/* Formulaire d'ajout/modification */}
           <AddStudentForm 
-            onSubmit={handleAddStudent}
-            onCancel={handleCancelAdd}
+            onSubmit={editingStudent ? handleEditStudent : handleAddStudent}
+            onCancel={handleCancel}
+            initialData={editingStudent}
           />
         </div>
       </Layout>
@@ -83,7 +107,7 @@ const Students: React.FC = () => {
     <Layout>
       <div className="space-y-6">
         {/* En-tête de la page */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm: space-y-0">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
               Gestion des Stagiaires
@@ -171,10 +195,12 @@ const Students: React.FC = () => {
                     }`}>
                       {stagiaire.statut}
                     </span>
-                    <Button variant="outline" size="sm">
-                      Voir
-                    </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleEditStudentClick(stagiaire)}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
                       Modifier
                     </Button>
                   </div>
