@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { File, Search, Calendar } from 'lucide-react';
+import { File, Calendar } from 'lucide-react';
 import AddTrainingForm from '@/components/forms/AddTrainingForm';
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,18 +15,7 @@ import { useToast } from "@/hooks/use-toast";
  */
 const Trainings: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
-
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    if (value.trim()) {
-      toast({
-        title: "Recherche de formations",
-        description: `Recherche pour: "${value}"`,
-      });
-    }
-  };
 
   const handleScheduleSession = () => {
     toast({
@@ -110,20 +99,10 @@ const Trainings: React.FC = () => {
           </Card>
         </div>
 
-        {/* Barre de recherche et filtres */}
+        {/* Filtres */}
         <Card>
           <CardContent className="p-6">
             <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Rechercher une formation..."
-                  value={searchTerm}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                />
-              </div>
               <div className="flex space-x-2">
                 <select className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20">
                   <option>Toutes les catégories</option>
