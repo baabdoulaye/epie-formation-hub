@@ -1,0 +1,63 @@
+# epie-formation-hub/docker-compose.yml
+
+version: "3.8" # Version de la spécification Docker Compose
+
+services:
+  # Service MongoDB
+  mongodb:
+    image: mongo:latest # Utilise l'image officielle de MongoDB
+    container_name: epie-mongodb # Nomme ton conteneur (comme celui que tu as déjà)
+    ports:
+      - "27017:27017" # Mappe le port 27017 du conteneur au port 27017 de ta machine locale
+    volumes:
+      - mongodb_data:/data/db # Persiste les données de la base de données
+    environment:
+      # Si tu as besoin d'un utilisateur/mot de passe pour MongoDB, définis-les ici
+      # MONGO_INITDB_ROOT_USERNAME: monuser
+      # MONGO_INITDB_ROOT_PASSWORD: monmotdepasse
+      # Tu peux les laisser vides pour le développement si tu ne les as pas configurés dans Atlas
+      # Attention, dans un .env côté backend, on utilisera MONGO_URI, pas ces variables directes.
+      # Elles servent à initier un utilisateur/mot de passe pour la base de données Docker elle-même.
+      # Pour l'instant, si tu n'as pas d'utilisateur/mdp pour ta BDD locale, laisse cette section vide.
+      # Si tu as un utilisateur/mdp dans ton backend/.env, assure-toi qu'ils correspondent à ce que tu configures ici ou à rien.
+      - MONGO_INITDB_DATABASE=epie_formation_db # Nomme la base de données par défaut créée
+
+  # Service Backend
+  backend:
+    build: ./backend # Indique à Docker Compose de construire l'image depuis le Dockerfile dans le dossier './backend'
+    container_name: epie-backend
+    ports:
+      - "5000:5000" # Mappe le port 5000 du conteneur au port 5000 de ta machine locale
+    volumes:
+      - ./backend:/app # Monte ton code local dans le conteneur pour le développement (hot-reloading)
+      - /app/node_modules # Évite que le node_modules local écrase celui du conteneur
+    environment:
+      # Passer les variables d'environnement du backend au conteneur
+      # Ces variables sont cruciales pour la connexion à MongoDB depuis le backend conteneurisé
+      MONGO_URI: mongodb://mongodb:27017/epie_formation_db # Ici, 'mongodb' est le nom du service défini dans docker-compose
+      PORT: 5000
+      JWT_SECRET: 7285985152 # Remplace par une vraie clé
+    depends_on:
+      - mongodb # S'assure que le service mongodb démarre avant le backend
+    # command: npm run dev # Utilise cette commande si tu veux nodemon pour le développement
+    # Pour l'instant, le CMD du Dockerfile est suffisant.
+
+  # Service Frontend
+  frontend:
+    build: ./frontend # Indique à Docker Compose de construire l'image depuis le Dockerfile dans le dossier './frontend'
+    container_name: epie-frontend
+    ports:
+      - "8081:80" # Mappe le port 80 du conteneur (Nginx) au port 80 de ta machine locale (accessible via http://localhost)
+      # Ou si tu préfères un autre port pour le frontend :
+      # - "3000:80" # Accessible via http://localhost:3000
+    depends_on:
+      - backend # S'assure que le backend démarre avant le frontend (pour les appels API)
+    # Pour le développement avec hot-reloading du frontend (nécessite des ajustements dans vite.config.ts)
+    # volumes:
+    #   - ./frontend:/app
+    #   - /app/node_modules
+    # command: npm run dev # Pour lancer le serveur de développement Vite
+
+# Volumes pour la persistance des données MongoDB
+volumes:
+  mongodb_data:
