@@ -1,5 +1,3 @@
-# epie-formation-hub/docker-compose.yml
-
 version: "3.8" # Version de la spécification Docker Compose
 
 services:
@@ -12,14 +10,6 @@ services:
     volumes:
       - mongodb_data:/data/db # Persiste les données de la base de données
     environment:
-      # Si tu as besoin d'un utilisateur/mot de passe pour MongoDB, définis-les ici
-      # MONGO_INITDB_ROOT_USERNAME: monuser
-      # MONGO_INITDB_ROOT_PASSWORD: monmotdepasse
-      # Tu peux les laisser vides pour le développement si tu ne les as pas configurés dans Atlas
-      # Attention, dans un .env côté backend, on utilisera MONGO_URI, pas ces variables directes.
-      # Elles servent à initier un utilisateur/mot de passe pour la base de données Docker elle-même.
-      # Pour l'instant, si tu n'as pas d'utilisateur/mdp pour ta BDD locale, laisse cette section vide.
-      # Si tu as un utilisateur/mdp dans ton backend/.env, assure-toi qu'ils correspondent à ce que tu configures ici ou à rien.
       - MONGO_INITDB_DATABASE=epie_formation_db # Nomme la base de données par défaut créée
 
   # Service Backend
@@ -39,24 +29,18 @@ services:
       JWT_SECRET: 7285985152 # Remplace par une vraie clé
     depends_on:
       - mongodb # S'assure que le service mongodb démarre avant le backend
-    # command: npm run dev # Utilise cette commande si tu veux nodemon pour le développement
-    # Pour l'instant, le CMD du Dockerfile est suffisant.
+    command: npm run dev # <-- Ligne décommentée : Cette ligne force le démarrage du serveur Node.js avec Nodemon/ton script dev
+    # Pour l'instant, le CMD du Dockerfile est suffisant. # <-- Cette ligne peut être supprimée ou laissée commentée
+    # Si le script 'dev' n'existe pas ou ne fonctionne pas, on pourra revenir au CMD du Dockerfile.
 
   # Service Frontend
   frontend:
     build: ./frontend # Indique à Docker Compose de construire l'image depuis le Dockerfile dans le dossier './frontend'
     container_name: epie-frontend
     ports:
-      - "8081:80" # Mappe le port 80 du conteneur (Nginx) au port 80 de ta machine locale (accessible via http://localhost)
-      # Ou si tu préfères un autre port pour le frontend :
-      # - "3000:80" # Accessible via http://localhost:3000
+      - "8081:80" # Mappe le port 80 du conteneur (Nginx) au port 80 de ta machine locale (accessible via http://localhost:8081)
     depends_on:
       - backend # S'assure que le backend démarre avant le frontend (pour les appels API)
-    # Pour le développement avec hot-reloading du frontend (nécessite des ajustements dans vite.config.ts)
-    # volumes:
-    #   - ./frontend:/app
-    #   - /app/node_modules
-    # command: npm run dev # Pour lancer le serveur de développement Vite
 
 # Volumes pour la persistance des données MongoDB
 volumes:

@@ -17,6 +17,12 @@ app.use(cors()); // Active CORS pour les requêtes du frontend
 // Connexion à MongoDB
 const connectDB = async () => {
   try {
+    // IMPORTANT : Assure-toi que MONGO_URI dans ton .env (dans le dossier backend)
+    // ou la configuration de ton docker-compose.yml est :
+    // MONGO_URI=mongodb://epie-mongodb:27017/epie_formation_db
+    // (si ton service MongoDB dans Docker Compose s'appelle 'epie-mongodb')
+    // OU MONGO_URI=mongodb://localhost:27017/epie_formation_db
+    // (si MongoDB est sur ta machine locale sans Docker)
     await mongoose.connect(process.env.MONGO_URI);
     console.log("MongoDB connecté avec succès !");
   } catch (err) {
@@ -28,11 +34,11 @@ connectDB();
 
 // Routes (elles seront définies dans le dossier routes)
 const employeeRoutes = require("./routes/employeeRoutes");
+const partnersRoutes = require("./routes/partners"); // Ligne ajoutée : importe les routes des partenaires
 
-// Exemple : app.use('/api/employees', require('./routes/employeeRoutes'));*
+// Monte les routes
 app.use("/api/employees", employeeRoutes);
-
-// Tu ajouteras tes routes ici au fur et à mesure
+app.use("/api/partners", partnersRoutes); // Ligne ajoutée : monte les routes des partenaires
 
 app.get("/", (req, res) => {
   res.send("L'API est opérationnelle !!!");

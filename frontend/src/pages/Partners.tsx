@@ -1,15 +1,26 @@
-
-import React, { useState } from 'react';
-import Layout from '@/components/layout/Layout';
-import AddPartnerForm from '@/components/partners/AddPartnerForm';
+import React, { useState, useEffect } from "react"; // Ajout de useEffect
+import Layout from "@/components/layout/Layout";
+import AddPartnerForm from "@/components/partners/AddPartnerForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Building2, Search, Plus, ArrowLeft, Mail, Phone, Globe, MapPin, Edit, Trash2 } from 'lucide-react';
+import {
+  Building2,
+  Search,
+  Plus,
+  ArrowLeft,
+  Mail,
+  Phone,
+  Globe,
+  MapPin,
+  Edit,
+  Trash2,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import axios from "axios"; // Import de axios
 
 interface Partner {
-  id: string;
+  _id: string; // Utilise _id pour correspondre à MongoDB
   nom: string;
   typePartenaire: string;
   secteurActivite: string;
@@ -17,106 +28,136 @@ interface Partner {
   codePostal: string;
   siteWeb?: string;
   description?: string;
-  dateCreation: string;
+  createdAt: string; // Utilise createdAt pour correspondre à MongoDB
 }
+
+const API_BASE_URL = "http://localhost:5000/api"; // URL de base de ton API backend
 
 const Partners: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [partners, setPartners] = useState<Partner[]>([
-    {
-      id: '1',
-      nom: 'Pôle Emploi Métropole Lilloise',
-      typePartenaire: 'Institutionnel',
-      secteurActivite: 'Emploi et Insertion',
-      ville: 'Lille',
-      codePostal: '59000',
-      siteWeb: 'https://www.pole-emploi.fr',
-      description: 'Partenaire principal pour le placement et l\'accompagnement des demandeurs d\'emploi',
-      dateCreation: '2023-01-15'
-    },
-    {
-      id: '2',
-      nom: 'Région Hauts-de-France',
-      typePartenaire: 'Collectivité',
-      secteurActivite: 'Formation Professionnelle',
-      ville: 'Lille',
-      codePostal: '59555',
-      siteWeb: 'https://www.hautsdefrance.fr',
-      description: 'Financeur et partenaire stratégique pour les formations qualifiantes',
-      dateCreation: '2023-02-20'
-    },
-    {
-      id: '3',
-      nom: 'AGEFIPH Nord',
-      typePartenaire: 'Institutionnel',
-      secteurActivite: 'Emploi et Insertion',
-      ville: 'Lille',
-      codePostal: '59000',
-      siteWeb: 'https://www.agefiph.fr',
-      description: 'Accompagnement des personnes en situation de handicap',
-      dateCreation: '2023-03-10'
-    },
-    {
-      id: '4',
-      nom: 'Métropole Européenne de Lille',
-      typePartenaire: 'Collectivité',
-      secteurActivite: 'Public',
-      ville: 'Lille',
-      codePostal: '59033',
-      siteWeb: 'https://www.lillemetropole.fr',
-      description: 'Partenaire territorial pour les formations numériques',
-      dateCreation: '2023-04-05'
-    }
-  ]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [partners, setPartners] = useState<Partner[]>([]); // Initialise avec un tableau vide
   const { toast } = useToast();
+  const [loading, setLoading] = useState(true); // État de chargement
+  const [error, setError] = useState<string | null>(null); // État d'erreur
 
-  const filteredPartners = partners.filter(partner =>
-    partner.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    partner.typePartenaire.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    partner.secteurActivite.toLowerCase().includes(searchTerm.toLowerCase())
+  // --- Fonction pour récupérer les partenaires depuis l'API ---
+  const fetchPartners = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get(`${API_BASE_URL}/partners`);
+      setPartners(response.data);
+    } catch (err) {
+      console.error("Erreur lors de la récupération des partenaires :", err);
+      setError("Impossible de charger les partenaires. Veuillez réessayer.");
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les partenaires.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // --- Appel de la fonction fetchPartners au montage du composant ---
+  useEffect(() => {
+    fetchPartners();
+  }, []); // Le tableau vide [] assure que cela ne s'exécute qu'une seule fois au montage
+
+  const filteredPartners = partners.filter(
+    (partner) =>
+      partner.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      partner.typePartenaire.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      partner.secteurActivite.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddPartner = (data: any) => {
-    const newPartner: Partner = {
-      id: Date.now().toString(),
-      ...data,
-      dateCreation: new Date().toISOString()
-    };
-    setPartners([...partners, newPartner]);
-    
-    toast({
-      title: "Partenaire ajouté avec succès",
-      description: `${data.nom} a été ajouté à la liste des partenaires.`,
-    });
-    
-    setShowAddForm(false);
+  // --- Gestion de l'ajout d'un partenaire avec appel API ---
+  const handleAddPartner = async (data: any) => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/partners`, data);
+      setPartners([...partners, response.data]); // Ajoute le partenaire retourné par l'API (avec son _id)
+
+      toast({
+        title: "Partenaire ajouté avec succès",
+        description: `${data.nom} a été ajouté à la liste des partenaires.`,
+      });
+
+      setShowAddForm(false);
+    } catch (err) {
+      console.error("Erreur lors de l'ajout du partenaire :", err);
+      toast({
+        title: "Erreur d'ajout",
+        description:
+          "Impossible d'ajouter le partenaire. Vérifiez les informations.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleEditPartner = (data: any) => {
-    setPartners(partners.map(partner => 
-      partner.id === editingPartner?.id 
-        ? { ...partner, ...data }
-        : partner
-    ));
-    
-    toast({
-      title: "Partenaire modifié avec succès",
-      description: `${data.nom} a été mis à jour.`,
-    });
-    
-    setEditingPartner(null);
+  // --- Gestion de la modification d'un partenaire avec appel API ---
+  const handleEditPartner = async (data: any) => {
+    if (!editingPartner) return;
+    try {
+      const response = await axios.put(
+        `${API_BASE_URL}/partners/${editingPartner._id}`,
+        data
+      );
+      setPartners(
+        partners.map((partner) =>
+          partner._id === editingPartner._id
+            ? response.data // Remplace par les données mises à jour retournées par l'API
+            : partner
+        )
+      );
+
+      toast({
+        title: "Partenaire modifié avec succès",
+        description: `${data.nom} a été mis à jour.`,
+      });
+
+      setEditingPartner(null);
+    } catch (err) {
+      console.error("Erreur lors de la modification du partenaire :", err);
+      toast({
+        title: "Erreur de modification",
+        description: "Impossible de modifier le partenaire.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeletePartner = (partnerId: string) => {
-    const partnerToDelete = partners.find(p => p.id === partnerId);
-    setPartners(partners.filter(partner => partner.id !== partnerId));
-    
-    toast({
-      title: "Partenaire supprimé",
-      description: `${partnerToDelete?.nom} a été supprimé de la liste.`,
-    });
+  // --- Gestion de la suppression d'un partenaire avec appel API ---
+  const handleDeletePartner = async (partnerId: string) => {
+    const partnerToDelete = partners.find((p) => p._id === partnerId);
+    if (!partnerToDelete) return;
+
+    if (
+      !window.confirm(
+        `Êtes-vous sûr de vouloir supprimer le partenaire ${partnerToDelete.nom} ?`
+      )
+    ) {
+      return; // Annule la suppression si l'utilisateur annule la confirmation
+    }
+
+    try {
+      await axios.delete(`${API_BASE_URL}/partners/${partnerId}`);
+      setPartners(partners.filter((partner) => partner._id !== partnerId)); // Filtre localement après succès API
+
+      toast({
+        title: "Partenaire supprimé",
+        description: `${partnerToDelete.nom} a été supprimé de la liste.`,
+      });
+    } catch (err) {
+      console.error("Erreur lors de la suppression du partenaire :", err);
+      toast({
+        title: "Erreur de suppression",
+        description: "Impossible de supprimer le partenaire.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleCancelAdd = () => {
@@ -129,16 +170,16 @@ const Partners: React.FC = () => {
 
   const getPartnerTypeColor = (type: string) => {
     switch (type) {
-      case 'Institutionnel':
-        return 'bg-blue-100 text-blue-700';
-      case 'Collectivité':
-        return 'bg-green-100 text-green-700';
-      case 'Entreprise':
-        return 'bg-purple-100 text-purple-700';
-      case 'Association':
-        return 'bg-orange-100 text-orange-700';
+      case "Institutionnel":
+        return "bg-blue-100 text-blue-700";
+      case "Collectivité":
+        return "bg-green-100 text-green-700";
+      case "Entreprise":
+        return "bg-purple-100 text-purple-700";
+      case "Association":
+        return "bg-orange-100 text-orange-700";
       default:
-        return 'bg-gray-100 text-gray-700';
+        return "bg-gray-100 text-gray-700";
     }
   };
 
@@ -147,8 +188,8 @@ const Partners: React.FC = () => {
       <Layout>
         <div className="space-y-6">
           <div className="flex items-center space-x-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleCancelAdd}
               className="flex items-center space-x-2"
             >
@@ -165,7 +206,7 @@ const Partners: React.FC = () => {
             </div>
           </div>
 
-          <AddPartnerForm 
+          <AddPartnerForm
             onSubmit={handleAddPartner}
             onCancel={handleCancelAdd}
           />
@@ -179,8 +220,8 @@ const Partners: React.FC = () => {
       <Layout>
         <div className="space-y-6">
           <div className="flex items-center space-x-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleCancelEdit}
               className="flex items-center space-x-2"
             >
@@ -197,11 +238,33 @@ const Partners: React.FC = () => {
             </div>
           </div>
 
-          <AddPartnerForm 
+          <AddPartnerForm
             onSubmit={handleEditPartner}
             onCancel={handleCancelEdit}
             initialData={editingPartner}
           />
+        </div>
+      </Layout>
+    );
+  }
+
+  // Ajout d'un affichage de chargement/erreur
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex justify-center items-center h-64">
+          <p className="text-lg text-gray-700">Chargement des partenaires...</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="flex justify-center items-center h-64 flex-col">
+          <p className="text-lg text-red-600 mb-4">{error}</p>
+          <Button onClick={fetchPartners}>Réessayer</Button>
         </div>
       </Layout>
     );
@@ -213,14 +276,12 @@ const Partners: React.FC = () => {
         {/* En-tête de la page */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Partenaires
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-900">Partenaires</h1>
             <p className="text-gray-600 mt-1">
               {filteredPartners.length} partenaires
             </p>
           </div>
-          <Button 
+          <Button
             className="bg-primary hover:bg-primary/90"
             onClick={() => setShowAddForm(true)}
           >
@@ -248,7 +309,12 @@ const Partners: React.FC = () => {
         {/* Liste des partenaires */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {filteredPartners.map((partner) => (
-            <Card key={partner.id} className="hover:shadow-lg transition-shadow">
+            <Card
+              key={partner._id}
+              className="hover:shadow-lg transition-shadow"
+            >
+              {" "}
+              {/* Utilise _id comme clé */}
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-3">
@@ -258,10 +324,16 @@ const Partners: React.FC = () => {
                     <div>
                       <CardTitle className="text-lg">{partner.nom}</CardTitle>
                       <div className="flex items-center space-x-2 mt-1">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPartnerTypeColor(partner.typePartenaire)}`}>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${getPartnerTypeColor(
+                            partner.typePartenaire
+                          )}`}
+                        >
                           {partner.typePartenaire}
                         </span>
-                        <span className="text-sm text-gray-500">{partner.secteurActivite}</span>
+                        <span className="text-sm text-gray-500">
+                          {partner.secteurActivite}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -271,15 +343,17 @@ const Partners: React.FC = () => {
                 <div className="space-y-3">
                   <div className="flex items-center space-x-2 text-sm text-gray-600">
                     <MapPin className="h-4 w-4" />
-                    <span>{partner.ville} {partner.codePostal}</span>
+                    <span>
+                      {partner.ville} {partner.codePostal}
+                    </span>
                   </div>
-                  
+
                   {partner.siteWeb && (
                     <div className="flex items-center space-x-2 text-sm text-gray-600">
                       <Globe className="h-4 w-4" />
-                      <a 
-                        href={partner.siteWeb} 
-                        target="_blank" 
+                      <a
+                        href={partner.siteWeb}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="hover:text-primary"
                       >
@@ -287,30 +361,32 @@ const Partners: React.FC = () => {
                       </a>
                     </div>
                   )}
-                  
+
                   {partner.description && (
                     <p className="text-sm text-gray-600 mt-3 p-3 bg-gray-50 rounded-lg">
                       {partner.description}
                     </p>
                   )}
-                  
+
                   <div className="flex justify-between items-center pt-4 border-t">
                     <span className="text-xs text-gray-500">
-                      Ajouté le {new Date(partner.dateCreation).toLocaleDateString('fr-FR')}
+                      Ajouté le{" "}
+                      {new Date(partner.createdAt).toLocaleDateString("fr-FR")}{" "}
+                      {/* Utilise createdAt */}
                     </span>
                     <div className="flex space-x-2">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => setEditingPartner(partner)}
                       >
                         <Edit className="h-4 w-4 mr-1" />
                         Modifier
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
-                        onClick={() => handleDeletePartner(partner.id)}
+                        onClick={() => handleDeletePartner(partner._id)}
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       >
                         <Trash2 className="h-4 w-4 mr-1" />
@@ -324,7 +400,7 @@ const Partners: React.FC = () => {
           ))}
         </div>
 
-        {filteredPartners.length === 0 && (
+        {filteredPartners.length === 0 && !loading && !error && (
           <Card className="text-center py-12">
             <CardContent>
               <Building2 className="mx-auto h-16 w-16 text-gray-400 mb-4" />
@@ -332,7 +408,9 @@ const Partners: React.FC = () => {
                 Aucun partenaire trouvé
               </h3>
               <p className="text-gray-600 mb-6">
-                {searchTerm ? 'Aucun partenaire ne correspond à votre recherche.' : 'Commencez par ajouter votre premier partenaire.'}
+                {searchTerm
+                  ? "Aucun partenaire ne correspond à votre recherche."
+                  : "Commencez par ajouter votre premier partenaire."}
               </p>
               <Button onClick={() => setShowAddForm(true)}>
                 <Plus className="mr-2 h-4 w-4" />
