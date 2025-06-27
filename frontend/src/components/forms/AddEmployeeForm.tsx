@@ -1,5 +1,5 @@
-
-import React, { useState, useEffect } from 'react';
+// frontend/src/components/forms/AddEmployeeForm.tsx
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,16 +12,20 @@ interface AddEmployeeFormProps {
   onSubmit: (data: any) => void;
 }
 
-const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onBack, initialData, onSubmit }) => {
+const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({
+  onBack,
+  initialData,
+  onSubmit,
+}) => {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
-    civilite: '',
-    nom: '',
-    prenom: '',
-    poste: '',
-    service: '',
-    email: '',
-    telephone: ''
+    civilite: "",
+    nom: "",
+    prenom: "",
+    poste: "",
+    service: "",
+    email: "",
+    // Le champ 'telephone' a été retiré ici
   });
 
   useEffect(() => {
@@ -36,9 +40,9 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onBack, initialData, 
   };
 
   const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -50,7 +54,7 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onBack, initialData, 
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <CardTitle>
-            {initialData ? 'Modifier l\'Employé' : 'Ajouter un Nouvel Employé'}
+            {initialData ? "Modifier l'Employé" : "Ajouter un Nouvel Employé"}
           </CardTitle>
         </div>
       </CardHeader>
@@ -59,10 +63,10 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onBack, initialData, 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="text-sm font-medium">Civilité</label>
-              <select 
+              <select
                 className="w-full p-2 border border-gray-300 rounded-lg"
                 value={formData.civilite}
-                onChange={(e) => handleChange('civilite', e.target.value)}
+                onChange={(e) => handleChange("civilite", e.target.value)}
                 required
               >
                 <option value="">Sélectionner</option>
@@ -70,45 +74,45 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onBack, initialData, 
                 <option value="Mme">Mme</option>
               </select>
             </div>
-            
+
             <div>
               <label className="text-sm font-medium">Nom</label>
               <Input
                 value={formData.nom}
-                onChange={(e) => handleChange('nom', e.target.value)}
+                onChange={(e) => handleChange("nom", e.target.value)}
                 placeholder="Nom de famille"
                 required
               />
             </div>
-            
+
             <div>
               <label className="text-sm font-medium">Prénom</label>
               <Input
                 value={formData.prenom}
-                onChange={(e) => handleChange('prenom', e.target.value)}
+                onChange={(e) => handleChange("prenom", e.target.value)}
                 placeholder="Prénom"
                 required
               />
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium">Poste</label>
               <Input
                 value={formData.poste}
-                onChange={(e) => handleChange('poste', e.target.value)}
+                onChange={(e) => handleChange("poste", e.target.value)}
                 placeholder="Poste occupé"
                 required
               />
             </div>
-            
+
             <div>
               <label className="text-sm font-medium">Service</label>
-              <select 
+              <select
                 className="w-full p-2 border border-gray-300 rounded-lg"
                 value={formData.service}
-                onChange={(e) => handleChange('service', e.target.value)}
+                onChange={(e) => handleChange("service", e.target.value)}
                 required
               >
                 <option value="">Sélectionner un service</option>
@@ -119,34 +123,28 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onBack, initialData, 
               </select>
             </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          {/* Ce bloc de grille contenait auparavant l'email et le téléphone.
+             Maintenant, comme il n'y a plus que l'email, on peut simplifier la grille ou la laisser à 1 colonne.
+             J'ai choisi de laisser une grille à 1 colonne explicite pour la clarté. */}
+          <div className="grid grid-cols-1 gap-4">
             <div>
               <label className="text-sm font-medium">Email</label>
               <Input
                 type="email"
                 value={formData.email}
-                onChange={(e) => handleChange('email', e.target.value)}
+                onChange={(e) => handleChange("email", e.target.value)}
                 placeholder="email@epie.fr"
                 required
               />
             </div>
-            
-            <div>
-              <label className="text-sm font-medium">Téléphone</label>
-              <Input
-                type="tel"
-                value={formData.telephone}
-                onChange={(e) => handleChange('telephone', e.target.value)}
-                placeholder="01 23 45 67 89"
-                required
-              />
-            </div>
+
+            {/* Le champ 'Téléphone' a été complètement supprimé d'ici */}
           </div>
-          
+
           <div className="flex space-x-4">
             <Button type="submit">
-              {initialData ? 'Modifier l\'Employé' : 'Ajouter l\'Employé'}
+              {initialData ? "Modifier l'Employé" : "Ajouter l'Employé"}
             </Button>
             <Button type="button" variant="outline" onClick={onBack}>
               Annuler

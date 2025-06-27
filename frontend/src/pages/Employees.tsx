@@ -1,3 +1,4 @@
+// frontend/src/pages/Employees.tsx
 import React, { useState, useEffect } from "react";
 import Layout from "../components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -206,8 +207,6 @@ const Employees: React.FC = () => {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Services</p>
                   <p className="text-2xl font-bold">
-                    {/* Pourrait être dynamique en fonction des services distincts si Lovable a prévu ça */}
-                    {/* Ou tu peux mettre la logique de comptage ici si les services sont des chaînes */}
                     {new Set(employees.map((emp: any) => emp.service)).size}
                   </p>
                 </div>
@@ -235,8 +234,9 @@ const Employees: React.FC = () => {
                     <th className="text-left py-3 px-4 font-medium text-gray-600">
                       Service
                     </th>
+                    {/* Colonne Contact / Téléphone supprimée */}
                     <th className="text-left py-3 px-4 font-medium text-gray-600">
-                      Contact
+                      Email
                     </th>
                     <th className="text-left py-3 px-4 font-medium text-gray-600">
                       Actions
@@ -267,12 +267,10 @@ const Employees: React.FC = () => {
                         <td className="py-3 px-4">
                           <p className="text-gray-600">{employee.service}</p>
                         </td>
+                        {/* Cellule de données Téléphone supprimée, ne reste que l'email */}
                         <td className="py-3 px-4">
                           <div className="text-sm">
                             <p className="text-gray-900">{employee.email}</p>
-                            <p className="text-gray-600">
-                              {employee.telephone}
-                            </p>
                           </div>
                         </td>
                         <td className="py-3 px-4">

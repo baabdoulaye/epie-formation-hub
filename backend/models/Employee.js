@@ -36,11 +36,6 @@ const employeeSchema = mongoose.Schema(
       lowercase: true, // Stocke l'email en minuscules
       match: [/.+@.+\..+/, "Veuillez utiliser une adresse email valide"], // Validation du format email
     },
-    telephone: {
-      type: String,
-      required: false, // Le téléphone n'est pas obligatoire
-      trim: true,
-    },
   },
   {
     timestamps: true, // Ajoute automatiquement les champs createdAt et updatedAt
