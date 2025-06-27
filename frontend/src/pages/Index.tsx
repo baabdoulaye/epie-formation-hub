@@ -1,16 +1,16 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import Layout from '@/components/layout/Layout';
-import StatsCard from '@/components/dashboard/StatsCard';
-import ChartCard from '@/components/dashboard/ChartCard';
-import { Users, Calendar, User, File, BookOpen, Building } from 'lucide-react';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import Layout from "@/components/layout/Layout";
+import StatsCard from "@/components/dashboard/StatsCard";
+import ChartCard from "@/components/dashboard/ChartCard";
+import { Users, Calendar, User, File, BookOpen, Building } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
 /**
  * Page Index - Tableau de bord principal d'EPIE Connect
- * 
+ *
  * Affiche les statistiques principales, graphiques et informations
  * de synthèse pour le pilotage des activités d'EPIE Formation
  */
@@ -23,83 +23,83 @@ const Index: React.FC = () => {
     students: {
       total: 245,
       active: 198,
-      trend: { value: 12, isPositive: true }
+      trend: { value: 12, isPositive: true },
     },
     trainings: {
       total: 12,
       active: 8,
-      trend: { value: 3, isPositive: true }
+      trend: { value: 3, isPositive: true },
     },
     employees: {
-      total: 18,
+      total: 222,
       trainers: 12,
-      trend: { value: 2, isPositive: true }
+      trend: { value: 2, isPositive: true },
     },
     partners: {
       total: 24,
       active: 20,
-      trend: { value: 5, isPositive: true }
-    }
+      trend: { value: 5, isPositive: true },
+    },
   };
 
   // Données pour le graphique des formations par catégorie
   const trainingsByCategoryData = [
-    { name: 'Numérique', value: 156, color: '#0077bc' },
-    { name: 'Socles Compétences', value: 67, color: '#d3d92b' },
-    { name: 'Linguistique', value: 22, color: '#339fce' }
+    { name: "Numérique", value: 156, color: "#0077bc" },
+    { name: "Socles Compétences", value: 67, color: "#d3d92b" },
+    { name: "Linguistique", value: 22, color: "#339fce" },
   ];
 
   // Données pour le graphique des sessions mensuelles
   const monthlySessionsData = [
-    { name: 'Jan', value: 8 },
-    { name: 'Fév', value: 12 },
-    { name: 'Mar', value: 10 },
-    { name: 'Avr', value: 15 },
-    { name: 'Mai', value: 18 },
-    { name: 'Jun', value: 14 }
+    { name: "Jan", value: 8 },
+    { name: "Fév", value: 12 },
+    { name: "Mar", value: 10 },
+    { name: "Avr", value: 15 },
+    { name: "Mai", value: 18 },
+    { name: "Jun", value: 14 },
   ];
 
   // Sessions récentes (données mockées)
   const recentSessions = [
     {
-      id: '1',
-      title: 'TP - Technicien(ne) d\'Assistance Informatique',
-      date: '2024-06-12',
-      trainer: 'Pierre Martin',
+      id: "1",
+      title: "TP - Technicien(ne) d'Assistance Informatique",
+      date: "2024-06-12",
+      trainer: "Pierre Martin",
       participants: 15,
-      status: 'En cours'
+      status: "En cours",
     },
     {
-      id: '2',
-      title: 'Formation Cléa - Compétences de base',
-      date: '2024-06-10',
-      trainer: 'Sophie Dubois',
+      id: "2",
+      title: "Formation Cléa - Compétences de base",
+      date: "2024-06-10",
+      trainer: "Sophie Dubois",
       participants: 12,
-      status: 'Planifiée'
+      status: "Planifiée",
     },
     {
-      id: '3',
-      title: 'Français Langue Étrangère - Niveau A2',
-      date: '2024-06-08',
-      trainer: 'Marie Leroy',
+      id: "3",
+      title: "Français Langue Étrangère - Niveau A2",
+      date: "2024-06-08",
+      trainer: "Marie Leroy",
       participants: 8,
-      status: 'Terminée'
-    }
+      status: "Terminée",
+    },
   ];
 
   const handleQuickAction = (action: string) => {
     switch (action) {
-      case 'add-student':
-        navigate('/stagiaires');
+      case "add-student":
+        navigate("/stagiaires");
         break;
-      case 'create-training':
-        navigate('/formations');
+      case "create-training":
+        navigate("/formations");
         break;
-      case 'schedule-session':
-        navigate('/sessions');
+      case "schedule-session":
+        navigate("/sessions");
         break;
-      case 'manage-users':
-        navigate('/employes');
+      case "manage-users":
+        navigate("/employes");
         break;
       default:
         break;
@@ -107,7 +107,7 @@ const Index: React.FC = () => {
   };
 
   const handleViewAllSessions = () => {
-    navigate('/sessions');
+    navigate("/sessions");
   };
 
   return (
@@ -115,9 +115,7 @@ const Index: React.FC = () => {
       <div className="space-y-8">
         {/* En-tête de la page */}
         <div className="flex flex-col space-y-2">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Tableau de Bord
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900">Tableau de Bord</h1>
           <p className="text-gray-600">
             Vue d'ensemble des activités d'EPIE Formation
           </p>
@@ -165,7 +163,7 @@ const Index: React.FC = () => {
             dataKey="value"
             nameKey="name"
           />
-          
+
           <ChartCard
             title="Sessions de Formation par Mois"
             subtitle="Évolution sur les 6 derniers mois"
@@ -182,14 +180,18 @@ const Index: React.FC = () => {
           <Card className="lg:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Sessions Récentes</CardTitle>
-              <Button variant="outline" size="sm" onClick={handleViewAllSessions}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleViewAllSessions}
+              >
                 Voir Toutes
               </Button>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {recentSessions.map((session) => (
-                  <div 
+                  <div
                     key={session.id}
                     className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                   >
@@ -204,13 +206,15 @@ const Index: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        session.status === 'En cours' 
-                          ? 'bg-green-100 text-green-700'
-                          : session.status === 'Planifiée'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-gray-100 text-gray-700'
-                      }`}>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          session.status === "En cours"
+                            ? "bg-green-100 text-green-700"
+                            : session.status === "Planifiée"
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-gray-100 text-gray-700"
+                        }`}
+                      >
                         {session.status}
                       </span>
                     </div>
@@ -226,34 +230,34 @@ const Index: React.FC = () => {
               <CardTitle>Actions Rapides</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button 
-                className="w-full justify-start" 
+              <Button
+                className="w-full justify-start"
                 variant="outline"
-                onClick={() => handleQuickAction('add-student')}
+                onClick={() => handleQuickAction("add-student")}
               >
                 <Users className="mr-2 h-4 w-4" />
                 Ajouter un Stagiaire
               </Button>
-              <Button 
-                className="w-full justify-start" 
+              <Button
+                className="w-full justify-start"
                 variant="outline"
-                onClick={() => handleQuickAction('create-training')}
+                onClick={() => handleQuickAction("create-training")}
               >
                 <File className="mr-2 h-4 w-4" />
                 Créer une Formation
               </Button>
-              <Button 
-                className="w-full justify-start" 
+              <Button
+                className="w-full justify-start"
                 variant="outline"
-                onClick={() => handleQuickAction('schedule-session')}
+                onClick={() => handleQuickAction("schedule-session")}
               >
                 <Calendar className="mr-2 h-4 w-4" />
                 Planifier une Session
               </Button>
-              <Button 
-                className="w-full justify-start" 
+              <Button
+                className="w-full justify-start"
                 variant="outline"
-                onClick={() => handleQuickAction('manage-users')}
+                onClick={() => handleQuickAction("manage-users")}
               >
                 <User className="mr-2 h-4 w-4" />
                 Gérer les Utilisateurs
@@ -274,9 +278,10 @@ const Index: React.FC = () => {
                   Bienvenue sur EPIE Connect !
                 </h3>
                 <p className="text-gray-600">
-                  Votre intranet de gestion pour piloter efficacement les activités d'EPIE Formation. 
-                  Accédez rapidement aux données importantes, gérez vos stagiaires et formations, 
-                  et suivez les performances en temps réel.
+                  Votre intranet de gestion pour piloter efficacement les
+                  activités d'EPIE Formation. Accédez rapidement aux données
+                  importantes, gérez vos stagiaires et formations, et suivez les
+                  performances en temps réel.
                 </p>
               </div>
             </div>

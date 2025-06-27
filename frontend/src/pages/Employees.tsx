@@ -1,103 +1,133 @@
-
-import React, { useState } from 'react';
-import Layout from '../components/layout/Layout';
+import React, { useState, useEffect } from "react";
+import Layout from "../components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Plus, Edit, Trash2 } from "lucide-react";
-import AddEmployeeForm from '@/components/forms/AddEmployeeForm';
+import AddEmployeeForm from "@/components/forms/AddEmployeeForm";
 import { useToast } from "@/hooks/use-toast";
+import axios from "axios";
 
 /**
  * Page Employés - Gestion du personnel EPIE
  */
 const Employees: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
+  console.log("Valeur initiale de showForm:", showForm);
   const [editingEmployee, setEditingEmployee] = useState<any>(null);
   const { toast } = useToast();
+  const [employees, setEmployees] = useState<any[]>([]); // Initialise à un tableau vide, les données viendront de l'API
 
-  // Données d'exemple pour les employés
-  const [employees, setEmployees] = useState([
-    {
-      id: 1,
-      civilite: 'Mme',
-      nom: 'Dubois',
-      prenom: 'Marie',
-      poste: 'Directrice',
-      service: 'Direction',
-      email: 'marie.dubois@epie.fr',
-      telephone: '01 23 45 67 89'
-    },
-    {
-      id: 2,
-      civilite: 'M.',
-      nom: 'Martin',
-      prenom: 'Pierre',
-      poste: 'Formateur',
-      service: 'Pédagogie',
-      email: 'pierre.martin@epie.fr',
-      telephone: '01 23 45 67 90'
-    },
-    {
-      id: 3,
-      civilite: 'Mme',
-      nom: 'Leroy',
-      prenom: 'Sophie',
-      poste: 'Coordinatrice',
-      service: 'Administration',
-      email: 'sophie.leroy@epie.fr',
-      telephone: '01 23 45 67 91'
+  // URL de base de ton API backend
+  const API_URL = "http://localhost:5000/api/employees"; // Adapte le port si différent (5000 est celui par défaut pour le backend Docker)
+
+  console.log("Composant Employees monté ou rendu.");
+
+  // 1. Fonction pour charger les employés depuis le backend au chargement de la page
+  const fetchEmployees = async () => {
+    console.log("Appel de fetchEmployees...");
+    try {
+      const response = await axios.get(API_URL);
+      console.log("Données reçues du backend:", response.data);
+      setEmployees(response.data); // Met à jour l'état avec les données de l'API
+    } catch (error) {
+      console.error("Erreur lors de la récupération des employés:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les employés. Veuillez réessayer.",
+        variant: "destructive",
+      });
     }
-  ]);
+  };
+
+  // Utilise useEffect pour charger les employés une seule fois au montage du composant
+  useEffect(() => {
+    console.log("Utilisation de useEffect...");
+    fetchEmployees();
+  }, []); // Le tableau vide [] signifie que cela s'exécute une seule fois au chargement initial
 
   const handleEditEmployee = (employee: any) => {
     setEditingEmployee(employee);
     setShowForm(true);
   };
 
-  const handleDeleteEmployee = (employeeId: number) => {
-    const employeeToDelete = employees.find(emp => emp.id === employeeId);
-    setEmployees(employees.filter(emp => emp.id !== employeeId));
-    
-    toast({
-      title: "Employé supprimé",
-      description: `${employeeToDelete?.prenom} ${employeeToDelete?.nom} a été supprimé.`,
-    });
-  };
+  // 2. Modifier la fonction de suppression pour appeler l'API
+  const handleDeleteEmployee = async (employeeId: string) => {
+    // L'ID vient de la BDD, souvent string (MongoDB utilise _id)
+    try {
+      // Pour afficher le nom dans le toast avant suppression
+      const employeeToDelete = employees.find(
+        (emp: any) => emp._id === employeeId
+      ); // CORRECTION: emp.id -> emp._id
 
-  const handleSubmitEmployee = (data: any) => {
-    if (editingEmployee) {
-      // Modification
-      setEmployees(employees.map(emp => 
-        emp.id === editingEmployee.id 
-          ? { ...emp, ...data }
-          : emp
-      ));
+      // Appel à l'API pour supprimer
+      await axios.delete(`${API_URL}/${employeeId}`); // CORRECTION: Utilisation des backticks et ${}
+
+      // Mise à jour de l'état local après succès API
+      setEmployees(employees.filter((emp: any) => emp._id !== employeeId)); // CORRECTION: emp.id -> emp._id
       toast({
-        title: "Employé modifié",
-        description: `${data.prenom} ${data.nom} a été mis à jour.`,
+        title: "Employé supprimé",
+        description: `${employeeToDelete?.prenom} ${employeeToDelete?.nom} a été supprimé.`,
       });
-    } else {
-      // Ajout
-      const newEmployee = {
-        id: Date.now(),
-        ...data
-      };
-      setEmployees([...employees, newEmployee]);
+    } catch (error) {
+      console.error("Erreur lors de la suppression de l'employé:", error);
       toast({
-        title: "Employé ajouté",
-        description: `${data.prenom} ${data.nom} a été ajouté.`,
+        title: "Erreur de suppression",
+        description: "Impossible de supprimer l'employé. Veuillez réessayer.",
+        variant: "destructive",
       });
     }
-    
-    setShowForm(false);
-    setEditingEmployee(null);
   };
 
+  // 3. Modifier la fonction de soumission pour appeler l'API (Ajout ou Modification)
+  const handleSubmitEmployee = async (data: any) => {
+    try {
+      if (editingEmployee) {
+        // Modification existante
+        // CORRECTION: editingEmployee.id -> editingEmployee._id et utilisation des backticks
+        const response = await axios.put(
+          `${API_URL}/${editingEmployee._id}`,
+          data
+        );
+        setEmployees(
+          employees.map((emp: any) =>
+            emp._id === editingEmployee._id // CORRECTION: emp.id -> emp._id
+              ? response.data // Utilise les données renvoyées par le backend
+              : emp
+          )
+        );
+        toast({
+          title: "Employé modifié",
+          description: `${data.prenom} ${data.nom} a été mis à jour.`,
+        });
+      } else {
+        // Ajout d'un nouvel employé
+        const response = await axios.post(API_URL, data); // Appel à l'API pour ajouter
+        setEmployees([...employees, response.data]); // Ajoute l'employé renvoyé par le backend
+        toast({
+          title: "Employé ajouté",
+          description: `${data.prenom} ${data.nom} a été ajouté.`,
+        });
+      }
+
+      setShowForm(false);
+      setEditingEmployee(null);
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement de l'employé:", error);
+      toast({
+        title: "Erreur d'enregistrement",
+        description:
+          "Impossible d'enregistrer l'employé. Vérifiez la console pour les détails.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Logique pour afficher le formulaire ou la liste
   if (showForm) {
     return (
       <Layout>
-        <AddEmployeeForm 
+        <AddEmployeeForm
           onBack={() => {
             setShowForm(false);
             setEditingEmployee(null);
@@ -120,7 +150,10 @@ const Employees: React.FC = () => {
               Gestion du personnel et des équipes EPIE
             </p>
           </div>
-          <Button className="flex items-center gap-2" onClick={() => setShowForm(true)}>
+          <Button
+            className="flex items-center gap-2"
+            onClick={() => setShowForm(true)}
+          >
             <Plus className="h-4 w-4" />
             Nouvel Employé
           </Button>
@@ -133,13 +166,15 @@ const Employees: React.FC = () => {
               <div className="flex items-center">
                 <Users className="h-8 w-8 text-blue-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Employés</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Total Employés
+                  </p>
                   <p className="text-2xl font-bold">{employees.length}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
@@ -147,9 +182,15 @@ const Employees: React.FC = () => {
                   <span className="text-green-600 font-bold text-sm">F</span>
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Formateurs</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Formateurs
+                  </p>
                   <p className="text-2xl font-bold">
-                    {employees.filter(emp => emp.poste.includes('Formateur')).length}
+                    {
+                      employees.filter((emp: any) =>
+                        emp.poste.includes("Formateur")
+                      ).length
+                    }
                   </p>
                 </div>
               </div>
@@ -164,7 +205,11 @@ const Employees: React.FC = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Services</p>
-                  <p className="text-2xl font-bold">3</p>
+                  <p className="text-2xl font-bold">
+                    {/* Pourrait être dynamique en fonction des services distincts si Lovable a prévu ça */}
+                    {/* Ou tu peux mettre la logique de comptage ici si les services sont des chaînes */}
+                    {new Set(employees.map((emp: any) => emp.service)).size}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -181,58 +226,79 @@ const Employees: React.FC = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Nom</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Poste</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Service</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Contact</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Actions</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">
+                      Nom
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">
+                      Poste
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">
+                      Service
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">
+                      Contact
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {employees.map((employee) => (
-                    <tr key={employee.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4">
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            {employee.civilite} {employee.prenom} {employee.nom}
-                          </p>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <p className="text-gray-900">{employee.poste}</p>
-                      </td>
-                      <td className="py-3 px-4">
-                        <p className="text-gray-600">{employee.service}</p>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="text-sm">
-                          <p className="text-gray-900">{employee.email}</p>
-                          <p className="text-gray-600">{employee.telephone}</p>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex space-x-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleEditEmployee(employee)}
-                          >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Modifier
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleDeleteEmployee(employee.id)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Supprimer
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {employees.map(
+                    (
+                      employee: any // Ajoute ': any' ou crée une interface pour Employee
+                    ) => (
+                      <tr
+                        key={employee._id}
+                        className="border-b hover:bg-gray-50"
+                      >
+                        {/* Utilise _id pour la clé car c'est l'ID de MongoDB */}
+                        <td className="py-3 px-4">
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {employee.civilite} {employee.prenom}{" "}
+                              {employee.nom}
+                            </p>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <p className="text-gray-900">{employee.poste}</p>
+                        </td>
+                        <td className="py-3 px-4">
+                          <p className="text-gray-600">{employee.service}</p>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="text-sm">
+                            <p className="text-gray-900">{employee.email}</p>
+                            <p className="text-gray-600">
+                              {employee.telephone}
+                            </p>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditEmployee(employee)}
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Modifier
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteEmployee(employee._id)} // CORRECTION: Utilise employee._id
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Supprimer
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  )}
                 </tbody>
               </table>
             </div>

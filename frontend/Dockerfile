@@ -24,15 +24,13 @@ RUN npm run build
 FROM nginx:alpine
 
 # Étape 8: Supprimer les fichiers de configuration par défaut de Nginx
-# RUN rm /etc/nginx/conf.d/default.conf    peut-etre qu'il faudra que je décommente cette ligne
+RUN rm /etc/nginx/conf.d/default.conf     
 
-# Étape 9: Copier les fichiers de construction de l'étape 'build' vers le serveur Nginx
+# Étape 9: Copier la configuration Nginx personnalisée
+COPY nginx.conf /etc/nginx/conf.d/default.conf 
+
+# Étape 10: Copier les fichiers de construction de l'étape 'build' vers le serveur Nginx
 COPY --from=build /app/dist /usr/share/nginx/html
-
-# Étape 10: Copier un fichier de configuration Nginx personnalisé (à créer si besoin)
-# Si tu n'as pas de fichier nginx.conf personnalisé, tu peux commenter cette ligne.
-# Pour l'instant, on peut s'en passer, car la configuration par défaut de Nginx pour servir du HTML statique est suffisante.
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Étape 11: Exposer le port par défaut de Nginx (80)
 EXPOSE 80
