@@ -35,10 +35,12 @@ connectDB();
 // Routes (elles seront définies dans le dossier routes)
 const employeeRoutes = require("./routes/employeeRoutes");
 const partnersRoutes = require("./routes/partners"); // Ligne ajoutée : importe les routes des partenaires
+const formationRoutes = require("./routes/formationRoutes"); // Assure-toi que le chemin est correct
 
 // Monte les routes
 app.use("/api/employees", employeeRoutes);
 app.use("/api/partners", partnersRoutes); // Ligne ajoutée : monte les routes des partenaires
+app.use("/api/formations", formationRoutes); // Assure-toi que le chemin est correct
 
 app.get("/", (req, res) => {
   res.send("L'API est opérationnelle !!!");
