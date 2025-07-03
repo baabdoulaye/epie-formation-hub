@@ -37,12 +37,10 @@ const addEmployee = async (req, res) => {
 
   // Validation basique des champs requis (plus détaillé dans le modèle Mongoose)
   if (!civilite || !nom || !prenom || !poste || !service || !email) {
-    return res
-      .status(400)
-      .json({
-        message:
-          "Veuillez remplir tous les champs obligatoires (Civilité, Nom, Prénom, Poste, Service, Email).",
-      });
+    return res.status(400).json({
+      message:
+        "Veuillez remplir tous les champs obligatoires (Civilité, Nom, Prénom, Poste, Service, Email).",
+    });
   }
 
   try {
@@ -118,10 +116,26 @@ const deleteEmployee = async (req, res) => {
   }
 };
 
+// @desc    Obtenir le nombre total d'employés
+// @route   GET /api/employees/count
+// @access  Public
+const countEmployees = async (req, res) => {
+  try {
+    const count = await Employee.countDocuments(); // Utilise la méthode countDocuments() de Mongoose
+    res.status(200).json({ count: count });
+  } catch (error) {
+    console.error("Erreur lors du comptage des employés:", error); // Ajout d'un log pour le débogage
+    res
+      .status(500)
+      .json({ message: "Erreur serveur lors du comptage des employés." });
+  }
+};
+
 module.exports = {
   getEmployees,
   getEmployeeById,
   addEmployee,
   updateEmployee,
   deleteEmployee,
+  countEmployees, // <-- Très important : exporter la nouvelle fonction
 };

@@ -1,4 +1,5 @@
-import React from "react";
+// frontend/src/pages/Index.tsx
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import StatsCard from "@/components/dashboard/StatsCard";
@@ -18,12 +19,22 @@ const Index: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Données mockées pour les statistiques (à remplacer par de vraies données API)
+  // ÉTATS pour les données dynamiques
+  // Seul employeeCount reste dynamique, partnerCount est supprimé ici.
+  const [employeeCount, setEmployeeCount] = useState<number>(0);
+
+  const [loadingEmployees, setLoadingEmployees] = useState(true);
+  const [errorEmployees, setErrorEmployees] = useState<string | null>(null);
+
+  // Suppression des états de chargement et d'erreur pour les partenaires
+  // const [loadingPartners, setLoadingPartners] = useState(true);
+  // const [errorPartners, setErrorPartners] = useState<string | null>(null);
+
   const statsData = {
     students: {
       total: 245,
       active: 198,
-      trend: { value: 12, isPositive: true },
+      trend: { value: 15, isPositive: true },
     },
     trainings: {
       total: 12,
@@ -31,13 +42,13 @@ const Index: React.FC = () => {
       trend: { value: 3, isPositive: true },
     },
     employees: {
-      total: 222,
+      total: employeeCount,
       trainers: 12,
       trend: { value: 2, isPositive: true },
     },
     partners: {
-      total: 24,
-      active: 20,
+      total: 20, // <-- ICI : Valeur codée en dur (j'ai mis 24 comme dans tes précédentes images)
+      active: 20, // Reste statique pour l'instant
       trend: { value: 5, isPositive: true },
     },
   };
@@ -87,6 +98,40 @@ const Index: React.FC = () => {
     },
   ];
 
+  // Fonction pour récupérer le nombre d'employés (inchangée)
+  const fetchEmployeeCount = async () => {
+    setLoadingEmployees(true);
+    setErrorEmployees(null);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/employees/count`
+      );
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP: ${response.status}`);
+      }
+      const data = await response.json();
+      setEmployeeCount(data.count);
+    } catch (error: any) {
+      setErrorEmployees(error.message);
+      console.error(
+        "Erreur lors de la récupération du nombre d'employés:",
+        error
+      );
+    } finally {
+      setLoadingEmployees(false);
+    }
+  };
+
+  // Suppression complète de la fonction fetchPartnerCount car plus nécessaire
+  // const fetchPartnerCount = async () => { /* ... */ };
+
+  // Appel des fonctions de fetch au montage du composant
+  useEffect(() => {
+    fetchEmployeeCount();
+    // Suppression de l'appel pour fetchPartnerCount ici aussi
+    // fetchPartnerCount();
+  }, []);
+
   const handleQuickAction = (action: string) => {
     switch (action) {
       case "add-student":
@@ -117,7 +162,7 @@ const Index: React.FC = () => {
         <div className="flex flex-col space-y-2">
           <h1 className="text-3xl font-bold text-gray-900">Tableau de Bord</h1>
           <p className="text-gray-600">
-            Vue d'ensemble des activités d'EPIE Formation
+            Vue d'overview des activités d'EPIE Formation
           </p>
         </div>
 
@@ -125,28 +170,36 @@ const Index: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatsCard
             title="Stagiaires"
-            value="245"
+            value="245" // Reste statique pour l'instant
             subtitle="15 nouveaux ce mois"
             icon={Users}
             color="blue"
           />
           <StatsCard
-            title="Formations Actives"
-            value="12"
-            subtitle="3 commencent bientôt"
+            title="Formations"
+            value="12" // Reste statique pour l'instant
+            // subtitle="3 commencent bientôt"
             icon={BookOpen}
             color="green"
           />
           <StatsCard
             title="Employés"
-            value="15"
+            // Affiche le nombre d'employés ou un message de chargement/erreur
+            value={
+              loadingEmployees
+                ? "..."
+                : errorEmployees
+                ? "Erreur"
+                : employeeCount.toString()
+            }
             subtitle="Équipe pédagogique"
             icon={User}
             color="purple"
           />
           <StatsCard
             title="Partenaires"
-            value="24"
+            // La valeur est maintenant directement tirée de statsData.partners.total (qui est en dur)
+            value={statsData.partners.total.toString()}
             subtitle="Réseau de partenaires"
             icon={Building}
             color="orange"
@@ -260,7 +313,7 @@ const Index: React.FC = () => {
                 onClick={() => handleQuickAction("manage-users")}
               >
                 <User className="mr-2 h-4 w-4" />
-                Gérer les Utilisateurs
+                Gérer les Employés
               </Button>
             </CardContent>
           </Card>

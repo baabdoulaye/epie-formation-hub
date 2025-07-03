@@ -1,6 +1,6 @@
 // backend/controllers/partenaireController.js
 
-const Partenaire = require("../models/Partenaire"); // Assure-toi que le chemin est correct
+const Partenaire = require("../models/Partenaire"); // Assure-toi que le chemin est correct et que le nom du modèle est bien 'Partenaire'
 
 // @desc    Obtenir tous les partenaires
 // @route   GET /api/partners
@@ -102,5 +102,21 @@ exports.deletePartner = async (req, res) => {
     res.status(200).json({ message: "Partenaire supprimé avec succès" });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Obtenir le nombre total de partenaires
+// @route   GET /api/partners/count
+// @access  Public
+exports.countPartners = async (req, res) => {
+  // NOUVELLE FONCTION AJOUTÉE
+  try {
+    const count = await Partenaire.countDocuments(); // Utilise le modèle Partenaire
+    res.status(200).json({ count: count });
+  } catch (error) {
+    console.error("Erreur lors du comptage des partenaires:", error);
+    res
+      .status(500)
+      .json({ message: "Erreur serveur lors du comptage des partenaires." });
   }
 };

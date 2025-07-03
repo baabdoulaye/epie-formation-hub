@@ -7,12 +7,17 @@ const {
   addEmployee,
   updateEmployee,
   deleteEmployee,
+  countEmployees, // <-- Ajout de la nouvelle fonction
 } = require("../controllers/employeeController");
 
 // Route pour obtenir tous les employés et ajouter un nouvel employé
 // GET /api/employees
 // POST /api/employees
 router.route("/").get(getEmployees).post(addEmployee);
+
+// Nouvelle route pour obtenir le nombre total d'employés
+// GET /api/employees/count
+router.get("/count", countEmployees); // <-- Nouvelle route ajoutée ici
 
 // Route pour obtenir, mettre à jour ou supprimer un employé par ID
 // GET /api/employees/:id
