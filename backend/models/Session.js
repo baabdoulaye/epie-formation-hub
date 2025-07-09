@@ -9,28 +9,24 @@ const sessionSchema = new mongoose.Schema(
       trim: true,
       unique: true, // Assure que chaque session a un titre unique
     },
-    formation: {
-      // Correspond à 'formation' dans ton frontend
-      type: String, // Gardé comme String pour correspondre à tes select options dans AddSessionForm.tsx
-      required: [true, "La formation associée est requise."],
-    },
+    // Le champ 'formation' est entièrement supprimé du schéma
+    // formation: {
+    //   type: String,
+    //   required: [true, "La formation associée est requise."],
+    // },
     formateur: {
-      // Correspond à 'formateur' dans ton frontend
-      type: String, // Gardé comme String pour correspondre à tes select options dans AddSessionForm.tsx
+      type: String,
       required: [true, "Le formateur est requis."],
     },
     dateDebut: {
-      // Nommage corrigé pour correspondre au frontend
       type: Date,
       required: [true, "La date de début de la session est requise."],
     },
     dateFin: {
-      // Nommage corrigé pour correspondre au frontend
       type: Date,
       required: [true, "La date de fin de la session est requise."],
       validate: {
         validator: function (value) {
-          // La date de fin doit être égale ou postérieure à la date de début
           return value >= this.dateDebut;
         },
         message:
@@ -38,8 +34,7 @@ const sessionSchema = new mongoose.Schema(
       },
     },
     heureDebut: {
-      // Champ ajouté
-      type: String, // Format "HH:MM"
+      type: String,
       required: [true, "L'heure de début est requise."],
       match: [
         /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/,
@@ -47,8 +42,7 @@ const sessionSchema = new mongoose.Schema(
       ],
     },
     heureFin: {
-      // Champ ajouté
-      type: String, // Format "HH:MM"
+      type: String,
       required: [true, "L'heure de fin est requise."],
       match: [
         /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/,
@@ -56,25 +50,21 @@ const sessionSchema = new mongoose.Schema(
       ],
     },
     lieu: {
-      // Champ ajouté
       type: String,
       required: [true, "Le lieu de la session est requis."],
       trim: true,
     },
     capaciteMax: {
-      // Champ ajouté
       type: Number,
       required: [true, "La capacité maximale est requise."],
       min: [1, "La capacité maximale doit être d'au moins 1 participant."],
     },
     participantsInscrits: {
-      // Champ ajouté
       type: Number,
-      default: 0, // Commence à 0 participants
+      default: 0,
       min: [0, "Le nombre de participants inscrits ne peut pas être négatif."],
       validate: {
         validator: function (value) {
-          // Le nombre de participants inscrits ne peut pas dépasser la capacité maximale
           return value <= this.capaciteMax;
         },
         message:
@@ -82,7 +72,6 @@ const sessionSchema = new mongoose.Schema(
       },
     },
     statut: {
-      // Champ ajouté
       type: String,
       enum: {
         values: ["Planifiée", "En cours", "Terminée", "Annulée"],
@@ -98,7 +87,7 @@ const sessionSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // Ajoute automatiquement createdAt et updatedAt
+    timestamps: true,
   }
 );
 

@@ -8,33 +8,44 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, MapPin, Save, X, Clock, Users } from "lucide-react"; // Ajout de Clock et Users
+import { Calendar, MapPin, Save, X, Clock, Users } from "lucide-react";
 
-const sessionSchema = z.object({
-  title: z.string().min(1, "Le titre est requis"),
-  formation: z.string().min(1, "La formation est requise"),
-  formateur: z.string().min(1, "Le formateur est requis"),
-  dateDebut: z.string().min(1, "La date de début est requise"),
-  dateFin: z.string().min(1, "La date de fin est requise"),
-  heureDebut: z
-    .string()
-    .min(1, "L'heure de début est requise")
-    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Format d'heure invalide (HH:MM)"), // Ajout de l'heure de début avec validation regex
-  heureFin: z
-    .string()
-    .min(1, "L'heure de fin est requise")
-    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Format d'heure invalide (HH:MM)"), // Ajout de l'heure de fin avec validation regex
-  lieu: z.string().min(1, "Le lieu est requis"),
-  capaciteMax: z.preprocess(
-    // Utilisation de preprocess pour s'assurer que c'est un nombre
-    (val) => Number(val),
-    z
-      .number()
-      .min(1, "La capacité maximale doit être au moins de 1")
-      .int("La capacité doit être un nombre entier")
-  ), // Ajout de la capacité maximale
-  description: z.string().optional(),
-});
+const sessionSchema = z
+  .object({
+    title: z.string().min(1, "Le titre est requis"),
+    formateur: z.string().min(1, "Le formateur est requis"), // Reste une chaîne de caractères requise
+    dateDebut: z.string().min(1, "La date de début est requise"),
+    dateFin: z.string().min(1, "La date de fin est requise"),
+    heureDebut: z
+      .string()
+      .min(1, "L'heure de début est requise")
+      .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Format d'heure invalide (HH:MM)"),
+    heureFin: z
+      .string()
+      .min(1, "L'heure de fin est requise")
+      .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Format d'heure invalide (HH:MM)"),
+    lieu: z.string().min(1, "Le lieu est requis"),
+    capaciteMax: z.preprocess(
+      (val) => Number(val),
+      z
+        .number()
+        .min(1, "La capacité maximale doit être au moins de 1")
+        .int("La capacité doit être un nombre entier")
+    ),
+    participantsInscrits: z.preprocess(
+      (val) => Number(val),
+      z
+        .number()
+        .min(0, "Le nombre de participants ne peut pas être négatif")
+        .int("Le nombre de participants doit être un entier")
+    ),
+    description: z.string().optional(),
+  })
+  .refine((data) => data.participantsInscrits <= data.capaciteMax, {
+    message:
+      "Le nombre de participants inscrits ne peut pas dépasser la capacité maximale.",
+    path: ["participantsInscrits"],
+  });
 
 type SessionFormData = z.infer<typeof sessionSchema>;
 
@@ -85,59 +96,24 @@ const AddSessionForm: React.FC<AddSessionFormProps> = ({
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="formation">Formation Associée *</Label>
-              <select
-                id="formation"
-                {...register("formation")}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                <option value="">Sélectionner une formation</option>
-                <option value="technicien-assistance-informatique">
-                  TP - Technicien(ne) d'Assistance Informatique
-                </option>
-                <option value="clea-competences-base">
-                  Formation Cléa - Compétences de base
-                </option>
-                <option value="francais-langue-etrangere">
-                  Français Langue Étrangère
-                </option>
-                <option value="bureautique-avance">Bureautique Avancée</option>
-                <option value="comptabilite-gestion">
-                  Comptabilité et Gestion
-                </option>
-              </select>
-              {errors.formation && (
-                <p className="text-sm text-red-600">
-                  {errors.formation.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Formateur et lieu */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* MISE À JOUR : Champ formateur devient un Input */}
             <div className="space-y-2">
               <Label htmlFor="formateur">Formateur *</Label>
-              <select
+              <Input
                 id="formateur"
                 {...register("formateur")}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                <option value="">Sélectionner un formateur</option>
-                <option value="pierre-martin">Pierre Martin</option>
-                <option value="sophie-dubois">Sophie Dubois</option>
-                <option value="marie-leroy">Marie Leroy</option>
-                <option value="jean-bernard">Jean Bernard</option>
-                <option value="claire-rousseau">Claire Rousseau</option>
-              </select>
+                placeholder="Ex: John Doe"
+              />
               {errors.formateur && (
                 <p className="text-sm text-red-600">
                   {errors.formateur.message}
                 </p>
               )}
             </div>
+          </div>
 
+          {/* Lieu */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="lieu" className="flex items-center space-x-1">
                 <MapPin className="h-4 w-4" />
@@ -175,7 +151,7 @@ const AddSessionForm: React.FC<AddSessionFormProps> = ({
             </div>
           </div>
 
-          {/* NOUVEAU: Heures */}
+          {/* Heures */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label
@@ -185,11 +161,7 @@ const AddSessionForm: React.FC<AddSessionFormProps> = ({
                 <Clock className="h-4 w-4" />
                 <span>Heure de Début *</span>
               </Label>
-              <Input
-                id="heureDebut"
-                type="time" // Type pour la saisie d'heure (HH:MM)
-                {...register("heureDebut")}
-              />
+              <Input id="heureDebut" type="time" {...register("heureDebut")} />
               {errors.heureDebut && (
                 <p className="text-sm text-red-600">
                   {errors.heureDebut.message}
@@ -202,11 +174,7 @@ const AddSessionForm: React.FC<AddSessionFormProps> = ({
                 <Clock className="h-4 w-4" />
                 <span>Heure de Fin *</span>
               </Label>
-              <Input
-                id="heureFin"
-                type="time" // Type pour la saisie d'heure (HH:MM)
-                {...register("heureFin")}
-              />
+              <Input id="heureFin" type="time" {...register("heureFin")} />
               {errors.heureFin && (
                 <p className="text-sm text-red-600">
                   {errors.heureFin.message}
@@ -215,27 +183,51 @@ const AddSessionForm: React.FC<AddSessionFormProps> = ({
             </div>
           </div>
 
-          {/* NOUVEAU: Capacité Maximale */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="capaciteMax"
-              className="flex items-center space-x-1"
-            >
-              <Users className="h-4 w-4" />
-              <span>Capacité Maximale *</span>
-            </Label>
-            <Input
-              id="capaciteMax"
-              type="number" // Type numérique
-              min="1" // Minimum 1 participant
-              {...register("capaciteMax")}
-              placeholder="Ex: 20"
-            />
-            {errors.capaciteMax && (
-              <p className="text-sm text-red-600">
-                {errors.capaciteMax.message}
-              </p>
-            )}
+          {/* Capacité Maximale et Nombre de Stagiaires (saisissables) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label
+                htmlFor="capaciteMax"
+                className="flex items-center space-x-1"
+              >
+                <Users className="h-4 w-4" />
+                <span>Capacité Maximale *</span>
+              </Label>
+              <Input
+                id="capaciteMax"
+                type="number"
+                min="1"
+                {...register("capaciteMax")}
+                placeholder="Ex: 20"
+              />
+              {errors.capaciteMax && (
+                <p className="text-sm text-red-600">
+                  {errors.capaciteMax.message}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label
+                htmlFor="participantsInscrits"
+                className="flex items-center space-x-1"
+              >
+                <Users className="h-4 w-4" />
+                <span>Nombre de Stagiaires *</span>
+              </Label>
+              <Input
+                id="participantsInscrits"
+                type="number"
+                min="0"
+                {...register("participantsInscrits")}
+                placeholder="Ex: 0"
+              />
+              {errors.participantsInscrits && (
+                <p className="text-sm text-red-600">
+                  {errors.participantsInscrits.message}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Description */}

@@ -1,38 +1,99 @@
 // backend/controllers/sessionController.js
 const Session = require("../models/Session"); // Assure-toi que ce modèle existe
 
-// @desc    Obtenir toutes les sessions
-// @route   GET /api/sessions
-// @access  Public
+// Fonction utilitaire pour déterminer le statut d'une session
+const getSessionStatus = (dateDebut, dateFin) => {
+  const now = new Date();
+  // Créer des objets Date pour aujourd'hui, le début et la fin de la session,
+  // en réinitialisant l'heure à minuit pour comparer uniquement les jours.
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const sessionDebutDay = new Date(
+    new Date(dateDebut).getFullYear(),
+    new Date(dateDebut).getMonth(),
+    new Date(dateDebut).getDate()
+  );
+  const sessionFinDay = new Date(
+    new Date(dateFin).getFullYear(),
+    new Date(dateFin).getMonth(),
+    new Date(dateFin).getDate()
+  );
+
+  if (sessionFinDay < today) {
+    // Si la date de fin est strictement antérieure à aujourd'hui, la session est Terminée.
+    return "Terminée";
+  } else if (sessionDebutDay <= today && sessionFinDay >= today) {
+    // Si la date de début est aujourd'hui ou passée, ET la date de fin est aujourd'hui ou future, la session est En cours.
+    return "En cours";
+  } else {
+    // Sinon (si la date de début est future), la session est Planifiée.
+    return "Planifiée";
+  }
+};
+
+// @desc    Obtenir toutes les sessions
+// @route   GET /api/sessions
+// @access  Public
 exports.getAllSessions = async (req, res) => {
   try {
-    const sessions = await Session.find({}); // On peut ajouter des filtres ici plus tard si besoin
+    let sessions = await Session.find({}); // Récupère toutes les sessions
+
+    // Parcourir chaque session pour mettre à jour son statut si nécessaire
+    sessions = await Promise.all(
+      sessions.map(async (session) => {
+        // Si la session n'est pas manuellement "Annulée", recalcule son statut
+        if (session.statut !== "Annulée") {
+          const currentCalculatedStatus = getSessionStatus(
+            session.dateDebut,
+            session.dateFin
+          );
+          if (session.statut !== currentCalculatedStatus) {
+            // Si le statut calculé est différent du statut actuel en DB, on le met à jour
+            session.statut = currentCalculatedStatus;
+            await session.save(); // Sauvegarde le changement dans la base de données
+          }
+        }
+        return session; // Retourne la session (potentiellement mise à jour)
+      })
+    );
+
     res.status(200).json(sessions);
   } catch (error) {
     console.error("Erreur lors de la récupération des sessions:", error);
-    // Utilise un message plus générique pour éviter de révéler des détails d'implémentation
     res.status(500).json({
       message: "Erreur serveur lors de la récupération des sessions.",
     });
   }
 };
 
-// @desc    Obtenir une seule session par ID
-// @route   GET /api/sessions/:id
-// @access  Public
+// @desc    Obtenir une seule session par ID
+// @route   GET /api/sessions/:id
+// @access  Public
 exports.getSessionById = async (req, res) => {
   try {
-    const session = await Session.findById(req.params.id);
+    let session = await Session.findById(req.params.id); // Utilise 'let' car l'objet 'session' sera modifié
+
     if (!session) {
       return res.status(404).json({ message: "Session non trouvée" });
     }
+
+    // Mettre à jour le statut de la session avant de la renvoyer, sauf si elle est "Annulée"
+    if (session.statut !== "Annulée") {
+      const currentCalculatedStatus = getSessionStatus(
+        session.dateDebut,
+        session.dateFin
+      );
+      if (session.statut !== currentCalculatedStatus) {
+        session.statut = currentCalculatedStatus;
+        await session.save(); // Sauvegarde le changement
+      }
+    }
+
     res.status(200).json(session);
   } catch (error) {
     console.error(
       "Erreur lors de la récupération de la session par ID:",
       error
     );
-    // Gérer spécifiquement l'erreur si l'ID n'est pas un format valide de MongoDB ObjectId
     if (error.name === "CastError") {
       return res.status(400).json({ message: "ID de session invalide." });
     }
@@ -42,14 +103,12 @@ exports.getSessionById = async (req, res) => {
   }
 };
 
-// @desc    Créer une nouvelle session
-// @route   POST /api/sessions
-// @access  Private (typiquement, la création serait restreinte)
+// @desc    Créer une nouvelle session
+// @route   POST /api/sessions
+// @access  Private (typiquement, la création serait restreinte)
 exports.createSession = async (req, res) => {
-  // Il est préférable de déstructurer les champs attendus pour plus de clarté
   const {
     title,
-    formation,
     formateur,
     dateDebut,
     dateFin,
@@ -58,15 +117,13 @@ exports.createSession = async (req, res) => {
     lieu,
     capaciteMax,
     description,
-    participantsInscrits, // <--- NOUVEAU: S'assurer que 'participantsInscrits' est déstructuré
-    statut, // Peut être fourni, sinon le modèle mettra sa valeur par défaut
+    participantsInscrits,
+    // Note: 'statut' n'est plus directement utilisé pour l'initialisation auto
   } = req.body;
 
   // Validation basique côté contrôleur
-  // Pas besoin de valider participantsInscrits ici si Mongoose Schema le gère avec un 'default' et 'min'
   if (
     !title ||
-    !formation ||
     !formateur ||
     !dateDebut ||
     !dateFin ||
@@ -77,12 +134,11 @@ exports.createSession = async (req, res) => {
   ) {
     return res.status(400).json({
       message:
-        "Veuillez fournir tous les champs obligatoires : titre, formation, formateur, dates, heures, lieu, capacité maximale.",
+        "Veuillez fournir tous les champs obligatoires : titre, formateur, dates, heures, lieu, capacité maximale.",
     });
   }
 
-  // Optionnel : Validation spécifique si participantsInscrits doit être <= capaciteMax ici aussi.
-  // Cependant, la validation Mongoose au niveau du schéma est plus robuste et gère cela.
+  // Validation spécifique pour participantsInscrits vs capaciteMax
   if (
     participantsInscrits !== undefined &&
     participantsInscrits > capaciteMax
@@ -94,18 +150,11 @@ exports.createSession = async (req, res) => {
   }
 
   try {
-    // Optionnel : Vérifier si une session avec le même titre existe déjà avant de tenter de sauvegarder
-    // C'est redondant si tu as 'unique: true' sur le titre dans le schéma, mais utile pour un message d'erreur plus clair.
-    // const existingSession = await Session.findOne({ title: title });
-    // if (existingSession) {
-    //   return res
-    //     .status(409)
-    //     .json({ message: "Une session avec ce titre existe déjà." });
-    // }
+    // Déterminer le statut initial de la session basé sur les dates fournies
+    const initialStatut = getSessionStatus(dateDebut, dateFin);
 
     const newSession = new Session({
       title,
-      formation,
       formateur,
       dateDebut,
       dateFin,
@@ -114,22 +163,18 @@ exports.createSession = async (req, res) => {
       lieu,
       capaciteMax,
       description,
-      // MISE À JOUR : Assure-toi que participantsInscrits est passé ou utilise la valeur par défaut du schéma.
-      // Le 'default: 0' dans le schéma Mongoose est la meilleure approche. Si tu l'envoies depuis le frontend, il sera utilisé.
       participantsInscrits: participantsInscrits,
-      statut: statut || "Planifiée", // Le modèle peut aussi avoir un statut par défaut
+      statut: initialStatut, // Utilise le statut déterminé par la fonction
     });
 
     const savedSession = await newSession.save();
-    res.status(201).json(savedSession); // 201 Created est le bon code pour une création réussie
+    res.status(201).json(savedSession);
   } catch (error) {
     console.error("Erreur lors de la création de la session:", error);
-    // Gérer spécifiquement les erreurs de validation Mongoose
     if (error.name === "ValidationError") {
       const messages = Object.values(error.errors).map((val) => val.message);
       return res.status(400).json({ message: messages.join(", ") });
     }
-    // Gérer les erreurs de clé unique (comme le titre) si Mongoose les renvoie
     if (error.code === 11000) {
       return res
         .status(409)
@@ -141,22 +186,19 @@ exports.createSession = async (req, res) => {
   }
 };
 
-// @desc    Mettre à jour une session
-// @route   PUT /api/sessions/:id
-// @access  Private
+// @desc    Mettre à jour une session
+// @route   PUT /api/sessions/:id
+// @access  Private
 exports.updateSession = async (req, res) => {
   try {
-    const session = await Session.findById(req.params.id);
+    let session = await Session.findById(req.params.id); // Utilise 'let'
 
     if (!session) {
       return res.status(404).json({ message: "Session non trouvée" });
     }
 
-    // MISE À JOUR : Déstructure les champs du corps de la requête pour une mise à jour plus explicite
-    // Plutôt que Object.assign(session, req.body), ce qui peut introduire des champs non désirés
     const {
       title,
-      formation,
       formateur,
       dateDebut,
       dateFin,
@@ -164,12 +206,12 @@ exports.updateSession = async (req, res) => {
       heureFin,
       lieu,
       capaciteMax,
-      participantsInscrits, // <--- NOUVEAU: S'assurer que 'participantsInscrits' est déstructuré pour la mise à jour
+      participantsInscrits,
+      statut, // On l'accepte pour permettre de forcer "Annulée"
       description,
-      statut, // Si tu permets la mise à jour du statut
     } = req.body;
 
-    // Validation côté contrôleur pour participantsInscrits vs capaciteMax pour la mise à jour
+    // Validation côté contrôleur pour participantsInscrits vs capaciteMax
     if (
       participantsInscrits !== undefined &&
       participantsInscrits >
@@ -183,7 +225,6 @@ exports.updateSession = async (req, res) => {
 
     // Mettre à jour les champs individuellement
     session.title = title !== undefined ? title : session.title;
-    session.formation = formation !== undefined ? formation : session.formation;
     session.formateur = formateur !== undefined ? formateur : session.formateur;
     session.dateDebut = dateDebut !== undefined ? dateDebut : session.dateDebut;
     session.dateFin = dateFin !== undefined ? dateFin : session.dateFin;
@@ -196,10 +237,23 @@ exports.updateSession = async (req, res) => {
     session.participantsInscrits =
       participantsInscrits !== undefined
         ? participantsInscrits
-        : session.participantsInscrits; // <--- NOUVEAU: Mise à jour du champ
+        : session.participantsInscrits;
     session.description =
       description !== undefined ? description : session.description;
-    session.statut = statut !== undefined ? statut : session.statut;
+
+    // Logique pour le statut:
+    // Si le statut est explicitement envoyé comme "Annulée", on l'applique.
+    // Sinon, on recalcule le statut basé sur les dates (celles mises à jour ou celles existantes).
+    if (statut === "Annulée") {
+      session.statut = "Annulée";
+    } else {
+      // Utilise les nouvelles dates si elles sont définies, sinon les dates existantes de la session
+      const effectiveDateDebut =
+        dateDebut !== undefined ? dateDebut : session.dateDebut;
+      const effectiveDateFin =
+        dateFin !== undefined ? dateFin : session.dateFin;
+      session.statut = getSessionStatus(effectiveDateDebut, effectiveDateFin);
+    }
 
     const updatedSession = await session.save(); // Applique les validations du schéma Mongoose
     res.status(200).json(updatedSession);
@@ -225,18 +279,17 @@ exports.updateSession = async (req, res) => {
   }
 };
 
-// @desc    Supprimer une session
-// @route   DELETE /api/sessions/:id
-// @access  Private
+// @desc    Supprimer une session
+// @route   DELETE /api/sessions/:id
+// @access  Private
 exports.deleteSession = async (req, res) => {
   try {
-    // Utilise deleteOne après avoir trouvé pour gérer la 404 clairement
     const session = await Session.findById(req.params.id);
     if (!session) {
       return res.status(404).json({ message: "Session non trouvée" });
     }
 
-    await Session.deleteOne({ _id: req.params.id }); // Mongoose 6+
+    await Session.deleteOne({ _id: req.params.id });
     res.status(200).json({ message: "Session supprimée avec succès" });
   } catch (error) {
     console.error("Erreur lors de la suppression de la session:", error);
@@ -249,9 +302,9 @@ exports.deleteSession = async (req, res) => {
   }
 };
 
-// @desc    Obtenir le nombre total de sessions
-// @route   GET /api/sessions/count
-// @access  Public
+// @desc    Obtenir le nombre total de sessions
+// @route   GET /api/sessions/count
+// @access  Public
 exports.countSessions = async (req, res) => {
   try {
     const count = await Session.countDocuments();

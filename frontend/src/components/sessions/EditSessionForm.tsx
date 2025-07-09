@@ -1,4 +1,3 @@
-// frontend/src/components/sessions/EditSessionForm.tsx
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,32 +7,28 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, MapPin, Save, X, Clock, Users } from "lucide-react";
+import { Calendar, MapPin, Save, X, Clock, Users } from "lucide-react"; // Retiré BarChart, plus besoin pour un select
 
 // Interface Session (copiée de Sessions.tsx)
 interface Session {
   id: string;
   _id?: string;
   title: string;
-  formation: string;
   formateur: string;
-  dateDebut: string; // Garder comme string pour l'affichage, convertir si besoin pour l'API (Date)
+  dateDebut: string;
   dateFin: string;
   heureDebut: string;
   heureFin: string;
   lieu: string;
   capaciteMax: number;
-  participantsInscrits: number; // Assure-toi que cette propriété existe
-  statut: "Planifiée" | "En cours" | "Terminée" | "Annulée";
+  participantsInscrits: number;
+  statut: "Planifiée" | "En cours" | "Terminée" | "Annulée"; // Le statut est toujours là dans l'interface, mais pas modifiable via ce formulaire
   description?: string;
 }
 
-// MISE À JOUR DU SCHÉMA ZOD :
-// capaciteMax est toujours là, et participantsInscrits est maintenant validé
 const sessionSchema = z
   .object({
     title: z.string().min(1, "Le titre est requis"),
-    formation: z.string().min(1, "La formation est requise"),
     formateur: z.string().min(1, "Le formateur est requis"),
     dateDebut: z.string().min(1, "La date de début est requise"),
     dateFin: z.string().min(1, "La date de fin est requise"),
@@ -53,7 +48,6 @@ const sessionSchema = z
         .min(1, "La capacité maximale doit être au moins de 1")
         .int("La capacité doit être un nombre entier")
     ),
-    // NOUVEAU: participantsInscrits est un champ saisissable
     participantsInscrits: z.preprocess(
       (val) => Number(val),
       z
@@ -62,13 +56,15 @@ const sessionSchema = z
         .int("Le nombre de participants doit être un entier")
     ),
     description: z.string().optional(),
+    // RETIRÉ : Le champ 'statut' n'est plus inclus dans le schéma pour la modification manuelle
   })
   .refine((data) => data.participantsInscrits <= data.capaciteMax, {
     message:
       "Le nombre de participants inscrits ne peut pas dépasser la capacité maximale.",
-    path: ["participantsInscrits"], // Affiche l'erreur sous le champ participantsInscrits
+    path: ["participantsInscrits"],
   });
 
+// Type SessionFormData mis à jour (sans statut)
 type SessionFormData = z.infer<typeof sessionSchema>;
 
 interface EditSessionFormProps {
@@ -87,37 +83,37 @@ const EditSessionForm: React.FC<EditSessionFormProps> = ({
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    // RETIRÉ : setValue et watch car le champ statut n'est plus manuel
   } = useForm<SessionFormData>({
     resolver: zodResolver(sessionSchema),
     defaultValues: {
-      // Pré-remplir le formulaire avec les données de la session existante
       title: session.title,
-      formation: session.formation,
       formateur: session.formateur,
-      dateDebut: session.dateDebut, // Format YYYY-MM-DD
-      dateFin: session.dateFin, // Format YYYY-MM-DD
+      dateDebut: session.dateDebut.split("T")[0], // Formate la date pour les inputs de type 'date' (YYYY-MM-DD)
+      dateFin: session.dateFin.split("T")[0], // Formate la date pour les inputs de type 'date' (YYYY-MM-DD)
       heureDebut: session.heureDebut,
       heureFin: session.heureFin,
       lieu: session.lieu,
       capaciteMax: session.capaciteMax,
-      participantsInscrits: session.participantsInscrits, // NOUVEAU: Ajout de participantsInscrits aux defaultValues
+      participantsInscrits: session.participantsInscrits,
+      // RETIRÉ : 'statut' des defaultValues
       description: session.description || "",
     },
   });
 
-  // Mettre à jour les valeurs par défaut si la session change (au cas où on voudrait modifier une autre session sans recharger)
+  // Mettre à jour les valeurs par défaut si la session change
   useEffect(() => {
     reset({
       title: session.title,
-      formation: session.formation,
       formateur: session.formateur,
-      dateDebut: session.dateDebut,
-      dateFin: session.dateFin,
+      dateDebut: session.dateDebut.split("T")[0],
+      dateFin: session.dateFin.split("T")[0],
       heureDebut: session.heureDebut,
       heureFin: session.heureFin,
       lieu: session.lieu,
       capaciteMax: session.capaciteMax,
-      participantsInscrits: session.participantsInscrits, // NOUVEAU: Ajout de participantsInscrits aux defaultValues du reset
+      participantsInscrits: session.participantsInscrits,
+      // RETIRÉ : 'statut' du reset
       description: session.description || "",
     });
   }, [session, reset]);
@@ -136,8 +132,6 @@ const EditSessionForm: React.FC<EditSessionFormProps> = ({
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-          {/* ... (autres champs comme titre, formation, formateur, lieu, dates, heures) ... */}
-
           {/* Informations générales */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
@@ -153,58 +147,22 @@ const EditSessionForm: React.FC<EditSessionFormProps> = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="formation">Formation Associée *</Label>
-              <select
-                id="formation"
-                {...register("formation")}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                <option value="">Sélectionner une formation</option>
-                <option value="technicien-assistance-informatique">
-                  TP - Technicien(ne) d'Assistance Informatique
-                </option>
-                <option value="clea-competences-base">
-                  Formation Cléa - Compétences de base
-                </option>
-                <option value="francais-langue-etrangere">
-                  Français Langue Étrangère
-                </option>
-                <option value="bureautique-avance">Bureautique Avancée</option>
-                <option value="comptabilite-gestion">
-                  Comptabilité et Gestion
-                </option>
-              </select>
-              {errors.formation && (
-                <p className="text-sm text-red-600">
-                  {errors.formation.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Formateur et lieu */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
               <Label htmlFor="formateur">Formateur *</Label>
-              <select
+              <Input
                 id="formateur"
                 {...register("formateur")}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                <option value="">Sélectionner un formateur</option>
-                <option value="pierre-martin">Pierre Martin</option>
-                <option value="sophie-dubois">Sophie Dubois</option>
-                <option value="marie-leroy">Marie Leroy</option>
-                <option value="jean-bernard">Jean Bernard</option>
-                <option value="claire-rousseau">Claire Rousseau</option>
-              </select>
+                placeholder="Ex: John Doe"
+              />
               {errors.formateur && (
                 <p className="text-sm text-red-600">
                   {errors.formateur.message}
                 </p>
               )}
             </div>
+          </div>
 
+          {/* Lieu */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="lieu" className="flex items-center space-x-1">
                 <MapPin className="h-4 w-4" />
@@ -274,7 +232,7 @@ const EditSessionForm: React.FC<EditSessionFormProps> = ({
             </div>
           </div>
 
-          {/* MISE À JOUR : Capacité Maximale et Nombre de Stagiaires (saisissables) */}
+          {/* Capacité Maximale et Nombre de Stagiaires (saisissables) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label
@@ -298,20 +256,19 @@ const EditSessionForm: React.FC<EditSessionFormProps> = ({
               )}
             </div>
 
-            {/* ANCIENNE DIV POUR LA CAPACITÉ MAXIMALE - MAINTENANT C'EST LE NOMBRE DE STAGIAIRES */}
             <div className="space-y-2">
               <Label
                 htmlFor="participantsInscrits"
                 className="flex items-center space-x-1"
               >
                 <Users className="h-4 w-4" />
-                <span>Nombre de Stagiaires *</span> {/* Libellé mis à jour */}
+                <span>Nombre de Stagiaires *</span>
               </Label>
               <Input
                 id="participantsInscrits"
                 type="number"
-                min="0" // Le nombre de stagiaires peut être 0 au début
-                {...register("participantsInscrits")} // Maintenant enregistré dans le formulaire
+                min="0"
+                {...register("participantsInscrits")}
                 placeholder="Ex: 15"
               />
               {errors.participantsInscrits && (
