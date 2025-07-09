@@ -19,8 +19,8 @@ const Employees: React.FC = () => {
   const { toast } = useToast();
   const [employees, setEmployees] = useState<any[]>([]); // Initialise à un tableau vide, les données viendront de l'API
 
-  // URL de base de ton API backend
-  const API_URL = "http://localhost:5000/api/employees"; // Adapte le port si différent (5000 est celui par défaut pour le backend Docker)
+  // URL de base de ton API backend via la variable d'environnement
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
   console.log("Composant Employees monté ou rendu.");
 
@@ -28,7 +28,8 @@ const Employees: React.FC = () => {
   const fetchEmployees = async () => {
     console.log("Appel de fetchEmployees...");
     try {
-      const response = await axios.get(API_URL);
+      // Utilisation de API_BASE_URL
+      const response = await axios.get(`${API_BASE_URL}/api/employees`);
       console.log("Données reçues du backend:", response.data);
       setEmployees(response.data); // Met à jour l'état avec les données de l'API
     } catch (error) {
@@ -59,13 +60,13 @@ const Employees: React.FC = () => {
       // Pour afficher le nom dans le toast avant suppression
       const employeeToDelete = employees.find(
         (emp: any) => emp._id === employeeId
-      ); // CORRECTION: emp.id -> emp._id
+      );
 
       // Appel à l'API pour supprimer
-      await axios.delete(`${API_URL}/${employeeId}`); // CORRECTION: Utilisation des backticks et ${}
+      await axios.delete(`${API_BASE_URL}/api/employees/${employeeId}`); // Utilisation de API_BASE_URL
 
       // Mise à jour de l'état local après succès API
-      setEmployees(employees.filter((emp: any) => emp._id !== employeeId)); // CORRECTION: emp.id -> emp._id
+      setEmployees(employees.filter((emp: any) => emp._id !== employeeId));
       toast({
         title: "Employé supprimé",
         description: `${employeeToDelete?.prenom} ${employeeToDelete?.nom} a été supprimé.`,
@@ -85,14 +86,13 @@ const Employees: React.FC = () => {
     try {
       if (editingEmployee) {
         // Modification existante
-        // CORRECTION: editingEmployee.id -> editingEmployee._id et utilisation des backticks
         const response = await axios.put(
-          `${API_URL}/${editingEmployee._id}`,
+          `${API_BASE_URL}/api/employees/${editingEmployee._id}`, // Utilisation de API_BASE_URL
           data
         );
         setEmployees(
           employees.map((emp: any) =>
-            emp._id === editingEmployee._id // CORRECTION: emp.id -> emp._id
+            emp._id === editingEmployee._id
               ? response.data // Utilise les données renvoyées par le backend
               : emp
           )
@@ -103,7 +103,10 @@ const Employees: React.FC = () => {
         });
       } else {
         // Ajout d'un nouvel employé
-        const response = await axios.post(API_URL, data); // Appel à l'API pour ajouter
+        const response = await axios.post(
+          `${API_BASE_URL}/api/employees`,
+          data
+        ); // Utilisation de API_BASE_URL
         setEmployees([...employees, response.data]); // Ajoute l'employé renvoyé par le backend
         toast({
           title: "Employé ajouté",
@@ -234,7 +237,6 @@ const Employees: React.FC = () => {
                     <th className="text-left py-3 px-4 font-medium text-gray-600">
                       Service
                     </th>
-                    {/* Colonne Contact / Téléphone supprimée */}
                     <th className="text-left py-3 px-4 font-medium text-gray-600">
                       Email
                     </th>
@@ -267,7 +269,6 @@ const Employees: React.FC = () => {
                         <td className="py-3 px-4">
                           <p className="text-gray-600">{employee.service}</p>
                         </td>
-                        {/* Cellule de données Téléphone supprimée, ne reste que l'email */}
                         <td className="py-3 px-4">
                           <div className="text-sm">
                             <p className="text-gray-900">{employee.email}</p>
@@ -286,7 +287,7 @@ const Employees: React.FC = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleDeleteEmployee(employee._id)} // CORRECTION: Utilise employee._id
+                              onClick={() => handleDeleteEmployee(employee._id)}
                               className="text-red-600 hover:text-red-700 hover:bg-red-50"
                             >
                               <Trash2 className="h-4 w-4 mr-1" />

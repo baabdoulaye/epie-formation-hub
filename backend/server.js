@@ -2,47 +2,45 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const cors = require("cors"); // Pour permettre à ton frontend de communiquer avec le backend
+const cors = require("cors");
 
 // Charger les variables d'environnement depuis .env
-dotenv.config();
+dotenv.config({ path: "./.env" }); // S'assurer que le chemin est correct pour ton environnement
 
 const app = express();
-const PORT = process.env.PORT || 5000; // Le port de ton backend
+const PORT = process.env.PORT || 5000;
 
 // Middlewares
-app.use(express.json()); // Pour parser le JSON des requêtes (req.body)
-app.use(cors()); // Active CORS pour les requêtes du frontend
+app.use(express.json());
+app.use(cors());
 
 // Connexion à MongoDB
 const connectDB = async () => {
   try {
-    // IMPORTANT : Assure-toi que MONGO_URI dans ton .env (dans le dossier backend)
-    // ou la configuration de ton docker-compose.yml est :
-    // MONGO_URI=mongodb://epie-mongodb:27017/epie_formation_db
-    // (si ton service MongoDB dans Docker Compose s'appelle 'epie-mongodb')
-    // OU MONGO_URI=mongodb://localhost:27017/epie_formation_db
-    // (si MongoDB est sur ta machine locale sans Docker)
     await mongoose.connect(process.env.MONGO_URI);
     console.log("MongoDB connecté avec succès !");
   } catch (err) {
     console.error("Erreur de connexion MongoDB :", err.message);
-    process.exit(1); // Arrête le processus en cas d'erreur
+    // Affiche l'erreur complète pour le débogage
+    console.error(err);
+    process.exit(1);
   }
 };
 connectDB();
 
-// Routes (elles seront définies dans le dossier routes)
+// Routes
 const employeeRoutes = require("./routes/employeeRoutes");
 const partnersRoutes = require("./routes/partners");
 const formationRoutes = require("./routes/formationRoutes");
-const stagiaireRoutes = require("./routes/stagiaireRoutes"); // <-- NOUVEAU : Importe les routes des stagiaires
+const stagiaireRoutes = require("./routes/stagiaireRoutes");
+const sessionRoutes = require("./routes/sessionRoutes"); // Décommenté
 
 // Monte les routes
 app.use("/api/employees", employeeRoutes);
 app.use("/api/partners", partnersRoutes);
 app.use("/api/formations", formationRoutes);
-app.use("/api/stagiaires", stagiaireRoutes); // <-- NOUVEAU : Monte les routes des stagiaires
+app.use("/api/stagiaires", stagiaireRoutes);
+app.use("/api/sessions", sessionRoutes); // Décommenté
 
 app.get("/", (req, res) => {
   res.send("L'API est opérationnelle !!!");

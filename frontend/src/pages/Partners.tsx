@@ -1,3 +1,4 @@
+// frontend/src/pages/Partners.tsx
 import React, { useState, useEffect } from "react"; // Ajout de useEffect
 import Layout from "@/components/layout/Layout";
 import AddPartnerForm from "@/components/partners/AddPartnerForm";
@@ -31,7 +32,8 @@ interface Partner {
   createdAt: string; // Utilise createdAt pour correspondre à MongoDB
 }
 
-const API_BASE_URL = "http://localhost:5000/api"; // URL de base de ton API backend
+// Utilisation de la variable d'environnement pour l'URL de base
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Partners: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -47,7 +49,8 @@ const Partners: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${API_BASE_URL}/partners`);
+      // Utilisation de API_BASE_URL + /api/partners
+      const response = await axios.get(`${API_BASE_URL}/api/partners`);
       setPartners(response.data);
     } catch (err) {
       console.error("Erreur lors de la récupération des partenaires :", err);
@@ -77,7 +80,8 @@ const Partners: React.FC = () => {
   // --- Gestion de l'ajout d'un partenaire avec appel API ---
   const handleAddPartner = async (data: any) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/partners`, data);
+      // Utilisation de API_BASE_URL + /api/partners
+      const response = await axios.post(`${API_BASE_URL}/api/partners`, data);
       setPartners([...partners, response.data]); // Ajoute le partenaire retourné par l'API (avec son _id)
 
       toast({
@@ -102,7 +106,7 @@ const Partners: React.FC = () => {
     if (!editingPartner) return;
     try {
       const response = await axios.put(
-        `${API_BASE_URL}/partners/${editingPartner._id}`,
+        `${API_BASE_URL}/api/partners/${editingPartner._id}`, // Utilisation de API_BASE_URL
         data
       );
       setPartners(
@@ -143,7 +147,7 @@ const Partners: React.FC = () => {
     }
 
     try {
-      await axios.delete(`${API_BASE_URL}/partners/${partnerId}`);
+      await axios.delete(`${API_BASE_URL}/api/partners/${partnerId}`); // Utilisation de API_BASE_URL
       setPartners(partners.filter((partner) => partner._id !== partnerId)); // Filtre localement après succès API
 
       toast({
@@ -201,7 +205,7 @@ const Partners: React.FC = () => {
                 Ajouter un Nouveau Partenaire
               </h1>
               <p className="text-gray-600 mt-1">
-                Remplissez les informations du nouveau partenaire
+                Remplissez les informations du nouveau partenaire.
               </p>
             </div>
           </div>
@@ -209,6 +213,7 @@ const Partners: React.FC = () => {
           <AddPartnerForm
             onSubmit={handleAddPartner}
             onCancel={handleCancelAdd}
+            initialData={null}
           />
         </div>
       </Layout>
@@ -233,7 +238,7 @@ const Partners: React.FC = () => {
                 Modifier le Partenaire
               </h1>
               <p className="text-gray-600 mt-1">
-                Modifiez les informations de {editingPartner.nom}
+                Modifiez les informations du partenaire existant.
               </p>
             </div>
           </div>
@@ -248,37 +253,16 @@ const Partners: React.FC = () => {
     );
   }
 
-  // Ajout d'un affichage de chargement/erreur
-  if (loading) {
-    return (
-      <Layout>
-        <div className="flex justify-center items-center h-64">
-          <p className="text-lg text-gray-700">Chargement des partenaires...</p>
-        </div>
-      </Layout>
-    );
-  }
-
-  if (error) {
-    return (
-      <Layout>
-        <div className="flex justify-center items-center h-64 flex-col">
-          <p className="text-lg text-red-600 mb-4">{error}</p>
-          <Button onClick={fetchPartners}>Réessayer</Button>
-        </div>
-      </Layout>
-    );
-  }
-
   return (
     <Layout>
       <div className="space-y-6">
-        {/* En-tête de la page */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Partenaires</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Gestion des Partenaires
+            </h1>
             <p className="text-gray-600 mt-1">
-              {filteredPartners.length} partenaires
+              {partners.length} partenaire(s) enregistré(s)
             </p>
           </div>
           <Button
@@ -290,40 +274,49 @@ const Partners: React.FC = () => {
           </Button>
         </div>
 
-        {/* Barre de recherche */}
         <Card>
           <CardContent className="p-6">
-            <div className="relative">
+            <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 type="text"
-                placeholder="Rechercher par nom, type ou secteur..."
+                placeholder="Rechercher par nom, type ou secteur d'activité..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
               />
             </div>
           </CardContent>
         </Card>
 
-        {/* Liste des partenaires */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {filteredPartners.map((partner) => (
-            <Card
-              key={partner._id}
-              className="hover:shadow-lg transition-shadow"
-            >
-              {" "}
-              {/* Utilise _id comme clé */}
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Building2 className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">{partner.nom}</CardTitle>
-                      <div className="flex items-center space-x-2 mt-1">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Building2 className="h-6 w-6 text-primary" />
+              <span>Liste des Partenaires</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <p className="text-center text-gray-500">
+                Chargement des partenaires...
+              </p>
+            ) : error ? (
+              <p className="text-center text-red-500">{error}</p>
+            ) : filteredPartners.length === 0 ? (
+              <p className="text-center text-gray-500">
+                Aucun partenaire trouvé. Ajoutez-en un !
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {filteredPartners.map((partner) => (
+                  <div
+                    key={partner._id}
+                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="flex-1 space-y-1 sm:space-y-0">
+                      <h4 className="font-medium text-gray-900 flex items-center gap-2">
+                        {partner.nom}
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium ${getPartnerTypeColor(
                             partner.typePartenaire
@@ -331,50 +324,29 @@ const Partners: React.FC = () => {
                         >
                           {partner.typePartenaire}
                         </span>
-                        <span className="text-sm text-gray-500">
+                      </h4>
+                      <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4 mt-1 text-sm text-gray-500">
+                        <span>
+                          <MapPin className="inline h-4 w-4 mr-1 text-gray-400" />
+                          {partner.ville}, {partner.codePostal}
+                        </span>
+                        <span>
+                          <Building2 className="inline h-4 w-4 mr-1 text-gray-400" />
                           {partner.secteurActivite}
                         </span>
+                        {partner.siteWeb && (
+                          <a
+                            href={partner.siteWeb}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-500 hover:underline flex items-center gap-1"
+                          >
+                            <Globe className="h-4 w-4" /> Site Web
+                          </a>
+                        )}
                       </div>
                     </div>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <MapPin className="h-4 w-4" />
-                    <span>
-                      {partner.ville} {partner.codePostal}
-                    </span>
-                  </div>
-
-                  {partner.siteWeb && (
-                    <div className="flex items-center space-x-2 text-sm text-gray-600">
-                      <Globe className="h-4 w-4" />
-                      <a
-                        href={partner.siteWeb}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hover:text-primary"
-                      >
-                        Site web
-                      </a>
-                    </div>
-                  )}
-
-                  {partner.description && (
-                    <p className="text-sm text-gray-600 mt-3 p-3 bg-gray-50 rounded-lg">
-                      {partner.description}
-                    </p>
-                  )}
-
-                  <div className="flex justify-between items-center pt-4 border-t">
-                    <span className="text-xs text-gray-500">
-                      Ajouté le{" "}
-                      {new Date(partner.createdAt).toLocaleDateString("fr-FR")}{" "}
-                      {/* Utilise createdAt */}
-                    </span>
-                    <div className="flex space-x-2">
+                    <div className="flex items-center space-x-2 mt-3 sm:mt-0">
                       <Button
                         variant="outline"
                         size="sm"
@@ -384,41 +356,20 @@ const Partners: React.FC = () => {
                         Modifier
                       </Button>
                       <Button
-                        variant="outline"
+                        variant="destructive"
                         size="sm"
                         onClick={() => handleDeletePartner(partner._id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       >
                         <Trash2 className="h-4 w-4 mr-1" />
                         Supprimer
                       </Button>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {filteredPartners.length === 0 && !loading && !error && (
-          <Card className="text-center py-12">
-            <CardContent>
-              <Building2 className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Aucun partenaire trouvé
-              </h3>
-              <p className="text-gray-600 mb-6">
-                {searchTerm
-                  ? "Aucun partenaire ne correspond à votre recherche."
-                  : "Commencez par ajouter votre premier partenaire."}
-              </p>
-              <Button onClick={() => setShowAddForm(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Ajouter un Partenaire
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </Layout>
   );

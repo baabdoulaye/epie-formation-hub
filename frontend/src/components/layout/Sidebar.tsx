@@ -10,6 +10,8 @@ import {
   X,
   Briefcase,
   Building,
+  Layout,
+  LayoutDashboard,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -37,7 +39,7 @@ const Sidebar: React.FC = () => {
     {
       label: "Tableau de Bord",
       href: "/",
-      icon: Calendar,
+      icon: LayoutDashboard,
     },
     {
       label: "Stagiaires",
@@ -63,6 +65,11 @@ const Sidebar: React.FC = () => {
       label: "Partenaires",
       href: "/partenaires",
       icon: Building,
+    },
+    {
+      label: "Sessions",
+      href: "/sessions",
+      icon: Calendar,
     },
   ];
 
@@ -136,24 +143,7 @@ const Sidebar: React.FC = () => {
           })}
         </nav>
 
-        {/* Section informations rapides (reste inchangée) */}
-        <div className="absolute bottom-4 left-4 right-4">
-          <div className="bg-gradient-to-r from-epie-blue/10 to-epie-green/10 rounded-lg p-4">
-            <h3 className="text-sm font-medium text-gray-900 mb-2">
-              Statistiques Rapides
-            </h3>
-            <div className="space-y-1 text-xs text-gray-600">
-              <div className="flex justify-between">
-                <span>Sessions en cours:</span>
-                <span className="font-medium">8</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Nouveaux stagiaires:</span>
-                <span className="font-medium">12</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* La section "Statistiques Rapides" a été supprimée ici */}
       </aside>
 
       {/* Bouton pour ouvrir le sidebar sur mobile */}

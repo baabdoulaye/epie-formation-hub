@@ -1,5 +1,5 @@
-// frontend/src/components/sessions/AddSessionForm.tsx
-import React from "react";
+// frontend/src/components/sessions/EditSessionForm.tsx
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -8,42 +8,77 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, MapPin, Save, X, Clock, Users } from "lucide-react"; // Ajout de Clock et Users
+import { Calendar, MapPin, Save, X, Clock, Users } from "lucide-react";
 
-const sessionSchema = z.object({
-  title: z.string().min(1, "Le titre est requis"),
-  formation: z.string().min(1, "La formation est requise"),
-  formateur: z.string().min(1, "Le formateur est requis"),
-  dateDebut: z.string().min(1, "La date de début est requise"),
-  dateFin: z.string().min(1, "La date de fin est requise"),
-  heureDebut: z
-    .string()
-    .min(1, "L'heure de début est requise")
-    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Format d'heure invalide (HH:MM)"), // Ajout de l'heure de début avec validation regex
-  heureFin: z
-    .string()
-    .min(1, "L'heure de fin est requise")
-    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Format d'heure invalide (HH:MM)"), // Ajout de l'heure de fin avec validation regex
-  lieu: z.string().min(1, "Le lieu est requis"),
-  capaciteMax: z.preprocess(
-    // Utilisation de preprocess pour s'assurer que c'est un nombre
-    (val) => Number(val),
-    z
-      .number()
-      .min(1, "La capacité maximale doit être au moins de 1")
-      .int("La capacité doit être un nombre entier")
-  ), // Ajout de la capacité maximale
-  description: z.string().optional(),
-});
+// Interface Session (copiée de Sessions.tsx)
+interface Session {
+  id: string;
+  _id?: string;
+  title: string;
+  formation: string;
+  formateur: string;
+  dateDebut: string; // Garder comme string pour l'affichage, convertir si besoin pour l'API (Date)
+  dateFin: string;
+  heureDebut: string;
+  heureFin: string;
+  lieu: string;
+  capaciteMax: number;
+  participantsInscrits: number; // Assure-toi que cette propriété existe
+  statut: "Planifiée" | "En cours" | "Terminée" | "Annulée";
+  description?: string;
+}
+
+// MISE À JOUR DU SCHÉMA ZOD :
+// capaciteMax est toujours là, et participantsInscrits est maintenant validé
+const sessionSchema = z
+  .object({
+    title: z.string().min(1, "Le titre est requis"),
+    formation: z.string().min(1, "La formation est requise"),
+    formateur: z.string().min(1, "Le formateur est requis"),
+    dateDebut: z.string().min(1, "La date de début est requise"),
+    dateFin: z.string().min(1, "La date de fin est requise"),
+    heureDebut: z
+      .string()
+      .min(1, "L'heure de début est requise")
+      .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Format d'heure invalide (HH:MM)"),
+    heureFin: z
+      .string()
+      .min(1, "L'heure de fin est requise")
+      .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Format d'heure invalide (HH:MM)"),
+    lieu: z.string().min(1, "Le lieu est requis"),
+    capaciteMax: z.preprocess(
+      (val) => Number(val),
+      z
+        .number()
+        .min(1, "La capacité maximale doit être au moins de 1")
+        .int("La capacité doit être un nombre entier")
+    ),
+    // NOUVEAU: participantsInscrits est un champ saisissable
+    participantsInscrits: z.preprocess(
+      (val) => Number(val),
+      z
+        .number()
+        .min(0, "Le nombre de participants ne peut pas être négatif")
+        .int("Le nombre de participants doit être un entier")
+    ),
+    description: z.string().optional(),
+  })
+  .refine((data) => data.participantsInscrits <= data.capaciteMax, {
+    message:
+      "Le nombre de participants inscrits ne peut pas dépasser la capacité maximale.",
+    path: ["participantsInscrits"], // Affiche l'erreur sous le champ participantsInscrits
+  });
 
 type SessionFormData = z.infer<typeof sessionSchema>;
 
-interface AddSessionFormProps {
+interface EditSessionFormProps {
+  session: Session; // La session à modifier
   onSubmit: (data: SessionFormData) => void;
   onCancel: () => void;
 }
 
-const AddSessionForm: React.FC<AddSessionFormProps> = ({
+const EditSessionForm: React.FC<EditSessionFormProps> = ({
+  session,
   onSubmit,
   onCancel,
 }) => {
@@ -54,11 +89,41 @@ const AddSessionForm: React.FC<AddSessionFormProps> = ({
     reset,
   } = useForm<SessionFormData>({
     resolver: zodResolver(sessionSchema),
+    defaultValues: {
+      // Pré-remplir le formulaire avec les données de la session existante
+      title: session.title,
+      formation: session.formation,
+      formateur: session.formateur,
+      dateDebut: session.dateDebut, // Format YYYY-MM-DD
+      dateFin: session.dateFin, // Format YYYY-MM-DD
+      heureDebut: session.heureDebut,
+      heureFin: session.heureFin,
+      lieu: session.lieu,
+      capaciteMax: session.capaciteMax,
+      participantsInscrits: session.participantsInscrits, // NOUVEAU: Ajout de participantsInscrits aux defaultValues
+      description: session.description || "",
+    },
   });
+
+  // Mettre à jour les valeurs par défaut si la session change (au cas où on voudrait modifier une autre session sans recharger)
+  useEffect(() => {
+    reset({
+      title: session.title,
+      formation: session.formation,
+      formateur: session.formateur,
+      dateDebut: session.dateDebut,
+      dateFin: session.dateFin,
+      heureDebut: session.heureDebut,
+      heureFin: session.heureFin,
+      lieu: session.lieu,
+      capaciteMax: session.capaciteMax,
+      participantsInscrits: session.participantsInscrits, // NOUVEAU: Ajout de participantsInscrits aux defaultValues du reset
+      description: session.description || "",
+    });
+  }, [session, reset]);
 
   const handleFormSubmit = (data: SessionFormData) => {
     onSubmit(data);
-    reset();
   };
 
   return (
@@ -66,11 +131,13 @@ const AddSessionForm: React.FC<AddSessionFormProps> = ({
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <Calendar className="h-6 w-6 text-primary" />
-          <span>Planifier une Nouvelle Session</span>
+          <span>Modifier la Session</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+          {/* ... (autres champs comme titre, formation, formateur, lieu, dates, heures) ... */}
+
           {/* Informations générales */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
@@ -175,7 +242,7 @@ const AddSessionForm: React.FC<AddSessionFormProps> = ({
             </div>
           </div>
 
-          {/* NOUVEAU: Heures */}
+          {/* Heures */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label
@@ -185,11 +252,7 @@ const AddSessionForm: React.FC<AddSessionFormProps> = ({
                 <Clock className="h-4 w-4" />
                 <span>Heure de Début *</span>
               </Label>
-              <Input
-                id="heureDebut"
-                type="time" // Type pour la saisie d'heure (HH:MM)
-                {...register("heureDebut")}
-              />
+              <Input id="heureDebut" type="time" {...register("heureDebut")} />
               {errors.heureDebut && (
                 <p className="text-sm text-red-600">
                   {errors.heureDebut.message}
@@ -202,11 +265,7 @@ const AddSessionForm: React.FC<AddSessionFormProps> = ({
                 <Clock className="h-4 w-4" />
                 <span>Heure de Fin *</span>
               </Label>
-              <Input
-                id="heureFin"
-                type="time" // Type pour la saisie d'heure (HH:MM)
-                {...register("heureFin")}
-              />
+              <Input id="heureFin" type="time" {...register("heureFin")} />
               {errors.heureFin && (
                 <p className="text-sm text-red-600">
                   {errors.heureFin.message}
@@ -215,27 +274,52 @@ const AddSessionForm: React.FC<AddSessionFormProps> = ({
             </div>
           </div>
 
-          {/* NOUVEAU: Capacité Maximale */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="capaciteMax"
-              className="flex items-center space-x-1"
-            >
-              <Users className="h-4 w-4" />
-              <span>Capacité Maximale *</span>
-            </Label>
-            <Input
-              id="capaciteMax"
-              type="number" // Type numérique
-              min="1" // Minimum 1 participant
-              {...register("capaciteMax")}
-              placeholder="Ex: 20"
-            />
-            {errors.capaciteMax && (
-              <p className="text-sm text-red-600">
-                {errors.capaciteMax.message}
-              </p>
-            )}
+          {/* MISE À JOUR : Capacité Maximale et Nombre de Stagiaires (saisissables) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label
+                htmlFor="capaciteMax"
+                className="flex items-center space-x-1"
+              >
+                <Users className="h-4 w-4" />
+                <span>Capacité Maximale *</span>
+              </Label>
+              <Input
+                id="capaciteMax"
+                type="number"
+                min="1"
+                {...register("capaciteMax")}
+                placeholder="Ex: 20"
+              />
+              {errors.capaciteMax && (
+                <p className="text-sm text-red-600">
+                  {errors.capaciteMax.message}
+                </p>
+              )}
+            </div>
+
+            {/* ANCIENNE DIV POUR LA CAPACITÉ MAXIMALE - MAINTENANT C'EST LE NOMBRE DE STAGIAIRES */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="participantsInscrits"
+                className="flex items-center space-x-1"
+              >
+                <Users className="h-4 w-4" />
+                <span>Nombre de Stagiaires *</span> {/* Libellé mis à jour */}
+              </Label>
+              <Input
+                id="participantsInscrits"
+                type="number"
+                min="0" // Le nombre de stagiaires peut être 0 au début
+                {...register("participantsInscrits")} // Maintenant enregistré dans le formulaire
+                placeholder="Ex: 15"
+              />
+              {errors.participantsInscrits && (
+                <p className="text-sm text-red-600">
+                  {errors.participantsInscrits.message}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Description */}
@@ -267,7 +351,7 @@ const AddSessionForm: React.FC<AddSessionFormProps> = ({
             >
               <Save className="h-4 w-4" />
               <span>
-                {isSubmitting ? "Création..." : "Planifier la Session"}
+                {isSubmitting ? "Mise à jour..." : "Mettre à jour la Session"}
               </span>
             </Button>
           </div>
@@ -277,4 +361,4 @@ const AddSessionForm: React.FC<AddSessionFormProps> = ({
   );
 };
 
-export default AddSessionForm;
+export default EditSessionForm;

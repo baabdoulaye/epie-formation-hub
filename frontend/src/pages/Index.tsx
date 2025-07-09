@@ -20,47 +20,34 @@ const Index: React.FC = () => {
   const { toast } = useToast();
 
   // ÉTATS pour les données dynamiques
-  // Seul employeeCount reste dynamique, partnerCount est supprimé ici.
   const [employeeCount, setEmployeeCount] = useState<number>(0);
+  const [stagiaireCount, setStagiaireCount] = useState<number>(0); // Nouveau pour stagiaires
+  const [formationCount, setFormationCount] = useState<number>(0); // Nouveau pour formations
+  const [partnerCount, setPartnerCount] = useState<number>(0); // Nouveau pour partenaires
 
   const [loadingEmployees, setLoadingEmployees] = useState(true);
   const [errorEmployees, setErrorEmployees] = useState<string | null>(null);
 
-  // Suppression des états de chargement et d'erreur pour les partenaires
-  // const [loadingPartners, setLoadingPartners] = useState(true);
-  // const [errorPartners, setErrorPartners] = useState<string | null>(null);
+  const [loadingStagiaires, setLoadingStagiaires] = useState(true); // Nouveau
+  const [errorStagiaires, setErrorStagiaires] = useState<string | null>(null); // Nouveau
 
-  const statsData = {
-    students: {
-      total: 245,
-      active: 198,
-      trend: { value: 15, isPositive: true },
-    },
-    trainings: {
-      total: 12,
-      active: 8,
-      trend: { value: 3, isPositive: true },
-    },
-    employees: {
-      total: employeeCount,
-      trainers: 12,
-      trend: { value: 2, isPositive: true },
-    },
-    partners: {
-      total: 20, // <-- ICI : Valeur codée en dur (j'ai mis 24 comme dans tes précédentes images)
-      active: 20, // Reste statique pour l'instant
-      trend: { value: 5, isPositive: true },
-    },
-  };
+  const [loadingFormations, setLoadingFormations] = useState(true); // Nouveau
+  const [errorFormations, setErrorFormations] = useState<string | null>(null); // Nouveau
 
-  // Données pour le graphique des formations par catégorie
+  const [loadingPartners, setLoadingPartners] = useState(true); // Nouveau
+  const [errorPartners, setErrorPartners] = useState<string | null>(null); // Nouveau
+
+  // Suppression du statsData statique, les valeurs viendront des états
+  // const statsData = { /* ... */ };
+
+  // Données pour le graphique des formations par catégorie (restent mockées pour l'instant)
   const trainingsByCategoryData = [
     { name: "Numérique", value: 156, color: "#0077bc" },
     { name: "Socles Compétences", value: 67, color: "#d3d92b" },
     { name: "Linguistique", value: 22, color: "#339fce" },
   ];
 
-  // Données pour le graphique des sessions mensuelles
+  // Données pour le graphique des sessions mensuelles (restent mockées pour l'instant)
   const monthlySessionsData = [
     { name: "Jan", value: 8 },
     { name: "Fév", value: 12 },
@@ -98,7 +85,7 @@ const Index: React.FC = () => {
     },
   ];
 
-  // Fonction pour récupérer le nombre d'employés (inchangée)
+  // Fonctions pour récupérer les comptes depuis le backend
   const fetchEmployeeCount = async () => {
     setLoadingEmployees(true);
     setErrorEmployees(null);
@@ -122,14 +109,81 @@ const Index: React.FC = () => {
     }
   };
 
-  // Suppression complète de la fonction fetchPartnerCount car plus nécessaire
-  // const fetchPartnerCount = async () => { /* ... */ };
+  const fetchStagiaireCount = async () => {
+    setLoadingStagiaires(true);
+    setErrorStagiaires(null);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/stagiaires/count`
+      );
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP: ${response.status}`);
+      }
+      const data = await response.json();
+      setStagiaireCount(data.count);
+    } catch (error: any) {
+      setErrorStagiaires(error.message);
+      console.error(
+        "Erreur lors de la récupération du nombre de stagiaires:",
+        error
+      );
+    } finally {
+      setLoadingStagiaires(false);
+    }
+  };
+
+  const fetchFormationCount = async () => {
+    setLoadingFormations(true);
+    setErrorFormations(null);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/formations/count`
+      );
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP: ${response.status}`);
+      }
+      const data = await response.json();
+      setFormationCount(data.count);
+    } catch (error: any) {
+      setErrorFormations(error.message);
+      console.error(
+        "Erreur lors de la récupération du nombre de formations:",
+        error
+      );
+    } finally {
+      setLoadingFormations(false);
+    }
+  };
+
+  const fetchPartnerCount = async () => {
+    setLoadingPartners(true);
+    setErrorPartners(null);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/partners/count`
+      );
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP: ${response.status}`);
+      }
+      const data = await response.json();
+      setPartnerCount(data.count);
+    } catch (error: any) {
+      setErrorPartners(error.message);
+      console.error(
+        "Erreur lors de la récupération du nombre de partenaires:",
+        error
+      );
+    } finally {
+      setLoadingPartners(false);
+    }
+  };
 
   // Appel des fonctions de fetch au montage du composant
   useEffect(() => {
     fetchEmployeeCount();
-    // Suppression de l'appel pour fetchPartnerCount ici aussi
-    // fetchPartnerCount();
+    fetchStagiaireCount(); // Appel pour les stagiaires
+    fetchFormationCount(); // Appel pour les formations
+    fetchPartnerCount(); // Appel pour les partenaires
   }, []);
 
   const handleQuickAction = (action: string) => {
@@ -162,7 +216,7 @@ const Index: React.FC = () => {
         <div className="flex flex-col space-y-2">
           <h1 className="text-3xl font-bold text-gray-900">Tableau de Bord</h1>
           <p className="text-gray-600">
-            Vue d'overview des activités d'EPIE Formation
+            Vue d'ensemble des activités d'EPIE Formation
           </p>
         </div>
 
@@ -170,21 +224,32 @@ const Index: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatsCard
             title="Stagiaires"
-            value="245" // Reste statique pour l'instant
-            subtitle="15 nouveaux ce mois"
+            value={
+              loadingStagiaires
+                ? "..."
+                : errorStagiaires
+                ? "Erreur"
+                : stagiaireCount.toString()
+            }
+            subtitle="Total"
             icon={Users}
             color="blue"
           />
           <StatsCard
             title="Formations"
-            value="12" // Reste statique pour l'instant
-            // subtitle="3 commencent bientôt"
+            value={
+              loadingFormations
+                ? "..."
+                : errorFormations
+                ? "Erreur"
+                : formationCount.toString()
+            }
+            subtitle="Total"
             icon={BookOpen}
             color="green"
           />
           <StatsCard
             title="Employés"
-            // Affiche le nombre d'employés ou un message de chargement/erreur
             value={
               loadingEmployees
                 ? "..."
@@ -198,8 +263,13 @@ const Index: React.FC = () => {
           />
           <StatsCard
             title="Partenaires"
-            // La valeur est maintenant directement tirée de statsData.partners.total (qui est en dur)
-            value={statsData.partners.total.toString()}
+            value={
+              loadingPartners
+                ? "..."
+                : errorPartners
+                ? "Erreur"
+                : partnerCount.toString()
+            }
             subtitle="Réseau de partenaires"
             icon={Building}
             color="orange"
@@ -318,28 +388,6 @@ const Index: React.FC = () => {
             </CardContent>
           </Card>
         </div>
-
-        {/* Message de bienvenue personnalisé */}
-        <Card className="epie-gradient-subtle border-l-4 border-l-primary">
-          <CardContent className="p-6">
-            <div className="flex items-start space-x-4">
-              <div className="h-12 w-12 rounded-full epie-gradient flex items-center justify-center">
-                <span className="text-white font-bold">🏫</span>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Bienvenue sur EPIE Connect !
-                </h3>
-                <p className="text-gray-600">
-                  Votre intranet de gestion pour piloter efficacement les
-                  activités d'EPIE Formation. Accédez rapidement aux données
-                  importantes, gérez vos stagiaires et formations, et suivez les
-                  performances en temps réel.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </Layout>
   );

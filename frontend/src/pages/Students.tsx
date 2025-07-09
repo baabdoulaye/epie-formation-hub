@@ -4,7 +4,6 @@ import Layout from "@/components/layout/Layout";
 import AddStudentForm from "@/components/students/AddStudentForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-// Importe l'icône 'Trash2' de lucide-react pour le bouton de suppression
 import { Users, Search, User, ArrowLeft, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
@@ -39,6 +38,9 @@ interface Stagiaire {
   statut?: string;
 }
 
+// Utilisation de la variable d'environnement pour l'URL de base
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
 const Students: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingStudent, setEditingStudent] = useState<any>(null);
@@ -48,7 +50,7 @@ const Students: React.FC = () => {
 
   const fetchStagiaires = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/stagiaires");
+      const response = await axios.get(`${API_BASE_URL}/api/stagiaires`); // Utilisation de API_BASE_URL
       setStagiairesList(response.data);
     } catch (error: any) {
       console.error("Erreur lors de la récupération des stagiaires:", error);
@@ -71,7 +73,7 @@ const Students: React.FC = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/stagiaires",
+        `${API_BASE_URL}/api/stagiaires`, // Utilisation de API_BASE_URL
         data
       );
       console.log(
@@ -112,7 +114,7 @@ const Students: React.FC = () => {
       }
 
       const response = await axios.put(
-        `http://localhost:5000/api/stagiaires/${data._id}`,
+        `${API_BASE_URL}/api/stagiaires/${data._id}`, // Utilisation de API_BASE_URL
         data
       );
       console.log(
@@ -158,7 +160,7 @@ const Students: React.FC = () => {
     }
 
     try {
-      await axios.delete(`http://localhost:5000/api/stagiaires/${stagiaireId}`);
+      await axios.delete(`${API_BASE_URL}/api/stagiaires/${stagiaireId}`); // Utilisation de API_BASE_URL
       toast({
         title: "Stagiaire supprimé avec succès",
         description: `${studentName} a été retiré de la base de données.`,
@@ -357,9 +359,8 @@ const Students: React.FC = () => {
                         <Edit className="h-4 w-4 mr-1" />
                         Modifier
                       </Button>
-                      {/* NOUVEAU BOUTON DE SUPPRESSION */}
                       <Button
-                        variant="destructive" // Utilise la variante 'destructive' pour un bouton rouge
+                        variant="destructive"
                         size="sm"
                         onClick={() =>
                           handleDeleteStudent(
@@ -368,9 +369,7 @@ const Students: React.FC = () => {
                           )
                         }
                       >
-                        <Trash2 className="h-4 w-4 mr-1" />{" "}
-                        {/* Icône de poubelle */}
-                        Supprimer
+                        <Trash2 className="h-4 w-4 mr-1" /> Supprimer
                       </Button>
                     </div>
                   </div>
