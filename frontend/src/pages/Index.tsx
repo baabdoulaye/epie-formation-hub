@@ -1,5 +1,6 @@
 // frontend/src/pages/Index.tsx
-import React, { useEffect, useState } from "react";
+
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import StatsCard from "@/components/dashboard/StatsCard";
@@ -8,183 +9,265 @@ import { Users, Calendar, User, File, BookOpen, Building } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import axios from "axios";
 
-/**
- * Page Index - Tableau de bord principal d'EPIE Connect
- *
- * Affiche les statistiques principales, graphiques et informations
- * de synthèse pour le pilotage des activités d'EPIE Formation
- */
+// Définition de l'interface pour une session
+interface Session {
+  _id: string;
+  title: string;
+  dateDebut: string;
+  dateFin: string;
+  trainer: string;
+  participantsInscrits: number;
+  capaciteMax: number;
+  statut: "Planifiée" | "En cours" | "Terminée" | "Annulée";
+}
+
+// Nouvelle interface pour les données de statistiques d'employés
+interface EmployeeStats {
+  service: string;
+  poste: string;
+  count: number;
+}
+
+// Nouvelle interface pour les données de sessions mensuelles
+interface MonthlySessionData {
+  name: string; // Nom du mois (ex: "Jan")
+  value: number; // Nombre de sessions
+}
+
 const Index: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const API_BASE_URL =
+    import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+
   // ÉTATS pour les données dynamiques
   const [employeeCount, setEmployeeCount] = useState<number>(0);
-  const [stagiaireCount, setStagiaireCount] = useState<number>(0); // Nouveau pour stagiaires
-  const [formationCount, setFormationCount] = useState<number>(0); // Nouveau pour formations
-  const [partnerCount, setPartnerCount] = useState<number>(0); // Nouveau pour partenaires
+  const [stagiaireCount, setStagiaireCount] = useState<number>(0);
+  const [formationCount, setFormationCount] = useState<number>(0);
+  const [partnerCount, setPartnerCount] = useState<number>(0);
+  const [recentSessions, setRecentSessions] = useState<Session[]>([]);
+
+  // États pour les stats employés
+  const [employeeStatsByService, setEmployeeStatsByService] = useState<
+    { name: string; value: number; color?: string }[]
+  >([]);
+  const [employeeStatsByPoste, setEmployeeStatsByPoste] = useState<
+    { name: string; value: number; color?: string }[]
+  >([]);
+  const [loadingEmployeeStats, setLoadingEmployeeStats] = useState(true);
+  const [errorEmployeeStats, setErrorEmployeeStats] = useState<string | null>(
+    null
+  );
+
+  // NOUVEAUX ÉTATS pour les sessions mensuelles
+  const [monthlySessionsChartData, setMonthlySessionsChartData] = useState<
+    MonthlySessionData[]
+  >([]);
+  const [loadingMonthlySessions, setLoadingMonthlySessions] = useState(true);
+  const [errorMonthlySessions, setErrorMonthlySessions] = useState<
+    string | null
+  >(null);
 
   const [loadingEmployees, setLoadingEmployees] = useState(true);
   const [errorEmployees, setErrorEmployees] = useState<string | null>(null);
+  const [loadingStagiaires, setLoadingStagiaires] = useState(true);
+  const [errorStagiaires, setErrorStagiaires] = useState<string | null>(null);
+  const [loadingFormations, setLoadingFormations] = useState(true);
+  const [errorFormations, setErrorFormations] = useState<string | null>(null);
+  const [loadingPartners, setLoadingPartners] = useState(true);
+  const [errorPartners, setErrorPartners] = useState<string | null>(null);
+  const [loadingRecentSessions, setLoadingRecentSessions] = useState(true);
+  const [errorRecentSessions, setErrorRecentSessions] = useState<string | null>(
+    null
+  );
 
-  const [loadingStagiaires, setLoadingStagiaires] = useState(true); // Nouveau
-  const [errorStagiaires, setErrorStagiaires] = useState<string | null>(null); // Nouveau
-
-  const [loadingFormations, setLoadingFormations] = useState(true); // Nouveau
-  const [errorFormations, setErrorFormations] = useState<string | null>(null); // Nouveau
-
-  const [loadingPartners, setLoadingPartners] = useState(true); // Nouveau
-  const [errorPartners, setErrorPartners] = useState<string | null>(null); // Nouveau
-
-  // Suppression du statsData statique, les valeurs viendront des états
-  // const statsData = { /* ... */ };
-
-  // Données pour le graphique des formations par catégorie (restent mockées pour l'instant)
-  const trainingsByCategoryData = [
-    { name: "Numérique", value: 156, color: "#0077bc" },
-    { name: "Socles Compétences", value: 67, color: "#d3d92b" },
-    { name: "Linguistique", value: 22, color: "#339fce" },
-  ];
-
-  // Données pour le graphique des sessions mensuelles (restent mockées pour l'instant)
-  const monthlySessionsData = [
-    { name: "Jan", value: 8 },
-    { name: "Fév", value: 12 },
-    { name: "Mar", value: 10 },
-    { name: "Avr", value: 15 },
-    { name: "Mai", value: 18 },
-    { name: "Jun", value: 14 },
-  ];
-
-  // Sessions récentes (données mockées)
-  const recentSessions = [
-    {
-      id: "1",
-      title: "TP - Technicien(ne) d'Assistance Informatique",
-      date: "2024-06-12",
-      trainer: "Pierre Martin",
-      participants: 15,
-      status: "En cours",
-    },
-    {
-      id: "2",
-      title: "Formation Cléa - Compétences de base",
-      date: "2024-06-10",
-      trainer: "Sophie Dubois",
-      participants: 12,
-      status: "Planifiée",
-    },
-    {
-      id: "3",
-      title: "Français Langue Étrangère - Niveau A2",
-      date: "2024-06-08",
-      trainer: "Marie Leroy",
-      participants: 8,
-      status: "Terminée",
-    },
-  ];
-
-  // Fonctions pour récupérer les comptes depuis le backend
-  const fetchEmployeeCount = async () => {
+  // Fonctions fetch existantes (inchangées)
+  const fetchEmployeeCount = useCallback(async () => {
     setLoadingEmployees(true);
     setErrorEmployees(null);
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/employees/count`
-      );
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP: ${response.status}`);
-      }
-      const data = await response.json();
-      setEmployeeCount(data.count);
+      const response = await axios.get(`${API_BASE_URL}/api/employees/count`);
+      setEmployeeCount(response.data.count);
     } catch (error: any) {
       setErrorEmployees(error.message);
-      console.error(
-        "Erreur lors de la récupération du nombre d'employés:",
-        error
-      );
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger le nombre d'employés.",
+        variant: "destructive",
+      });
     } finally {
       setLoadingEmployees(false);
     }
-  };
+  }, [API_BASE_URL, toast]);
 
-  const fetchStagiaireCount = async () => {
+  const fetchStagiaireCount = useCallback(async () => {
     setLoadingStagiaires(true);
     setErrorStagiaires(null);
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/stagiaires/count`
-      );
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP: ${response.status}`);
-      }
-      const data = await response.json();
-      setStagiaireCount(data.count);
+      const response = await axios.get(`${API_BASE_URL}/api/stagiaires/count`);
+      setStagiaireCount(response.data.count);
     } catch (error: any) {
       setErrorStagiaires(error.message);
-      console.error(
-        "Erreur lors de la récupération du nombre de stagiaires:",
-        error
-      );
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger le nombre de stagiaires.",
+        variant: "destructive",
+      });
     } finally {
       setLoadingStagiaires(false);
     }
-  };
+  }, [API_BASE_URL, toast]);
 
-  const fetchFormationCount = async () => {
+  const fetchFormationCount = useCallback(async () => {
     setLoadingFormations(true);
     setErrorFormations(null);
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/formations/count`
-      );
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP: ${response.status}`);
-      }
-      const data = await response.json();
-      setFormationCount(data.count);
+      const response = await axios.get(`${API_BASE_URL}/api/formations/count`);
+      setFormationCount(response.data.count);
     } catch (error: any) {
       setErrorFormations(error.message);
-      console.error(
-        "Erreur lors de la récupération du nombre de formations:",
-        error
-      );
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger le nombre de formations.",
+        variant: "destructive",
+      });
     } finally {
       setLoadingFormations(false);
     }
-  };
+  }, [API_BASE_URL, toast]);
 
-  const fetchPartnerCount = async () => {
+  const fetchPartnerCount = useCallback(async () => {
     setLoadingPartners(true);
     setErrorPartners(null);
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/partners/count`
-      );
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP: ${response.status}`);
-      }
-      const data = await response.json();
-      setPartnerCount(data.count);
+      const response = await axios.get(`${API_BASE_URL}/api/partners/count`);
+      setPartnerCount(response.data.count);
     } catch (error: any) {
       setErrorPartners(error.message);
-      console.error(
-        "Erreur lors de la récupération du nombre de partenaires:",
-        error
-      );
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger le nombre de partenaires.",
+        variant: "destructive",
+      });
     } finally {
       setLoadingPartners(false);
     }
-  };
+  }, [API_BASE_URL, toast]);
 
-  // Appel des fonctions de fetch au montage du composant
+  const fetchRecentSessions = useCallback(async () => {
+    setLoadingRecentSessions(true);
+    setErrorRecentSessions(null);
+    try {
+      const response = await axios.get<Session[]>(
+        `${API_BASE_URL}/api/sessions/recent`
+      );
+      setRecentSessions(response.data);
+    } catch (error: any) {
+      setErrorRecentSessions(error.message);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les sessions récentes.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingRecentSessions(false);
+    }
+  }, [API_BASE_URL, toast]);
+
+  // FONCTION pour récupérer et formater les stats employés
+  const fetchEmployeeStats = useCallback(async () => {
+    setLoadingEmployeeStats(true);
+    setErrorEmployeeStats(null);
+    try {
+      const response = await axios.get<EmployeeStats[]>(
+        `${API_BASE_URL}/api/employees/stats/roles-services`
+      );
+
+      // Agrégation des données pour le graphique "Employés par Service"
+      const statsByService: { [key: string]: number } = {};
+      response.data.forEach((stat) => {
+        if (statsByService[stat.service]) {
+          statsByService[stat.service] += stat.count;
+        } else {
+          statsByService[stat.service] = stat.count;
+        }
+      });
+      const formattedServiceData = Object.keys(statsByService).map(
+        (service) => ({
+          name: service,
+          value: statsByService[service],
+        })
+      );
+      setEmployeeStatsByService(formattedServiceData);
+
+      // Agrégation des données pour le graphique "Employés par Poste"
+      const statsByPoste: { [key: string]: number } = {};
+      response.data.forEach((stat) => {
+        if (statsByPoste[stat.poste]) {
+          statsByPoste[stat.poste] += stat.count;
+        } else {
+          statsByPoste[stat.poste] = stat.count;
+        }
+      });
+      const formattedPosteData = Object.keys(statsByPoste).map((poste) => ({
+        name: poste,
+        value: statsByPoste[poste],
+      }));
+      setEmployeeStatsByPoste(formattedPosteData);
+    } catch (error: any) {
+      setErrorEmployeeStats(error.message);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les statistiques d'employés.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingEmployeeStats(false);
+    }
+  }, [API_BASE_URL, toast]);
+
+  // NOUVELLE FONCTION pour récupérer les sessions mensuelles
+  const fetchMonthlySessions = useCallback(async () => {
+    setLoadingMonthlySessions(true);
+    setErrorMonthlySessions(null);
+    try {
+      const response = await axios.get<MonthlySessionData[]>(
+        `${API_BASE_URL}/api/sessions/monthly-counts`
+      );
+      setMonthlySessionsChartData(response.data);
+    } catch (error: any) {
+      setErrorMonthlySessions(error.message);
+      toast({
+        title: "Erreur",
+        description:
+          "Impossible de charger les données des sessions mensuelles.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingMonthlySessions(false);
+    }
+  }, [API_BASE_URL, toast]);
+
   useEffect(() => {
     fetchEmployeeCount();
-    fetchStagiaireCount(); // Appel pour les stagiaires
-    fetchFormationCount(); // Appel pour les formations
-    fetchPartnerCount(); // Appel pour les partenaires
-  }, []);
+    fetchStagiaireCount();
+    fetchFormationCount();
+    fetchPartnerCount();
+    fetchRecentSessions();
+    fetchEmployeeStats();
+    fetchMonthlySessions(); // <-- Appel de la nouvelle fonction ici
+  }, [
+    fetchEmployeeCount,
+    fetchStagiaireCount,
+    fetchFormationCount,
+    fetchPartnerCount,
+    fetchRecentSessions,
+    fetchEmployeeStats,
+    fetchMonthlySessions, // <-- Ajout aux dépendances
+  ]);
 
   const handleQuickAction = (action: string) => {
     switch (action) {
@@ -209,18 +292,33 @@ const Index: React.FC = () => {
     navigate("/sessions");
   };
 
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "Date invalide";
+      const options: Intl.DateTimeFormatOptions = {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      };
+      return date.toLocaleDateString("fr-FR", options);
+    } catch (e) {
+      console.error("Erreur de formatage de date:", e);
+      return "Date invalide";
+    }
+  };
+
   return (
     <Layout>
       <div className="space-y-8">
-        {/* En-tête de la page */}
         <div className="flex flex-col space-y-2">
           <h1 className="text-3xl font-bold text-gray-900">Tableau de Bord</h1>
           <p className="text-gray-600">
-            Vue d'ensemble des activités d'EPIE Formation
+            Vue d'overview des activités d'EPIE Formation
           </p>
         </div>
 
-        {/* Cartes de statistiques principales */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatsCard
             title="Stagiaires"
@@ -276,30 +374,43 @@ const Index: React.FC = () => {
           />
         </div>
 
-        {/* Graphiques et analyses */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ChartCard
-            title="Stagiaires par Catégorie de Formation"
-            subtitle="Répartition des inscriptions actuelles"
-            type="pie"
-            data={trainingsByCategoryData}
-            dataKey="value"
-            nameKey="name"
-          />
-
+          {/* REMPLACEMENT : Sessions de Formation par Mois (Bar Chart) - Maintenant dynamique */}
           <ChartCard
             title="Sessions de Formation par Mois"
             subtitle="Évolution sur les 6 derniers mois"
             type="bar"
-            data={monthlySessionsData}
+            data={
+              loadingMonthlySessions
+                ? []
+                : errorMonthlySessions
+                ? [{ name: "Erreur", value: 1, color: "#EF4444" }]
+                : monthlySessionsChartData
+            }
             dataKey="value"
             nameKey="name"
+            colors={["#4A90E2"]} // Couleur unique pour les barres, tu peux la changer
+          />
+
+          {/* Graphique existant : Employés par Service */}
+          <ChartCard
+            title="Employés par Service"
+            subtitle="Répartition du personnel par département"
+            type="pie"
+            data={
+              loadingEmployeeStats
+                ? []
+                : errorEmployeeStats
+                ? [{ name: "Erreur de chargement", value: 1, color: "#EF4444" }]
+                : employeeStatsByService
+            }
+            dataKey="value"
+            nameKey="name"
+            colors={["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF"]}
           />
         </div>
 
-        {/* Informations récentes et actions rapides */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Sessions récentes */}
           <Card className="lg:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Sessions Récentes</CardTitle>
@@ -312,42 +423,68 @@ const Index: React.FC = () => {
               </Button>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {recentSessions.map((session) => (
-                  <div
-                    key={session.id}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">
-                        {session.title}
-                      </h4>
-                      <div className="flex items-center space-x-4 mt-1 text-sm text-gray-500">
-                        <span>📅 {session.date}</span>
-                        <span>👨‍🏫 {session.trainer}</span>
-                        <span>👥 {session.participants} participants</span>
+              {loadingRecentSessions ? (
+                <p className="text-center text-gray-500">
+                  Chargement des sessions...
+                </p>
+              ) : errorRecentSessions ? (
+                <p className="text-center text-red-500">
+                  Erreur: {errorRecentSessions}
+                </p>
+              ) : recentSessions.length === 0 ? (
+                <p className="text-center text-gray-500">
+                  Aucune session récente trouvée.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {recentSessions.map((session) => (
+                    <div
+                      key={session._id}
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900">
+                          {session.title}
+                        </h4>
+                        <div className="flex items-center space-x-4 mt-1 text-sm text-gray-500">
+                          <span>
+                            <Calendar className="inline-block h-4 w-4 mr-1 text-muted-foreground" />
+                            {formatDate(session.dateDebut)} -{" "}
+                            {formatDate(session.dateFin)}
+                          </span>
+                          {session.trainer && (
+                            <span>
+                              <User className="inline-block h-4 w-4 mr-1 text-muted-foreground" />
+                              {session.trainer}{" "}
+                            </span>
+                          )}
+                          <span>
+                            <Users className="inline-block h-4 w-4 mr-1 text-muted-foreground" />
+                            {session.participantsInscrits} /{" "}
+                            {session.capaciteMax} participants
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            session.statut === "En cours"
+                              ? "bg-green-100 text-green-700"
+                              : session.statut === "Planifiée"
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-gray-100 text-gray-700"
+                          }`}
+                        >
+                          {session.statut}
+                        </span>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          session.status === "En cours"
-                            ? "bg-green-100 text-green-700"
-                            : session.status === "Planifiée"
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-gray-100 text-gray-700"
-                        }`}
-                      >
-                        {session.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* Actions rapides */}
           <Card>
             <CardHeader>
               <CardTitle>Actions Rapides</CardTitle>

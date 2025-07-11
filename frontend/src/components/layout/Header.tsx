@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-
+import { Link } from "react-router-dom";
 /**
  * Composant Header - Barre de navigation principale
  *
@@ -36,9 +36,12 @@ const Header: React.FC = () => {
             <span className="text-white font-bold text-sm">E</span>
           </div>
           <div className="flex flex-col">
-            <h1 className="text-lg font-semibold text-gray-900">
-              EPIE Connect
-            </h1>
+            {/* Utilisation de Link de Next.js pour la navigation */}
+            <Link to="/" style={{ textDecoration: "none" }}>
+              <h1 className="text-lg font-semibold text-gray-900">
+                EPIE Connect
+              </h1>
+            </Link>
             <p className="text-xs text-gray-500">Intranet de Gestion</p>
           </div>
         </div>

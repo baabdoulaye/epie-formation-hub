@@ -130,6 +130,36 @@ const countEmployees = async (req, res) => {
       .json({ message: "Erreur serveur lors du comptage des employés." });
   }
 };
+const getEmployeeCountsByRoleAndService = async (req, res) => {
+  try {
+    const employeeStats = await Employee.aggregate([
+      {
+        $group: {
+          _id: { service: "$service", poste: "$poste" },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0, // Exclut l'ID par défaut
+          service: "$_id.service",
+          poste: "$_id.poste",
+          count: 1,
+        },
+      },
+      {
+        $sort: { service: 1, poste: 1 }, // Optionnel: trie les résultats
+      },
+    ]);
+    res.status(200).json(employeeStats);
+  } catch (error) {
+    console.error(
+      "Erreur lors de l'obtention des stats employés par rôle/service:",
+      error
+    );
+    res.status(500).json({ message: error.message });
+  }
+};
 
 module.exports = {
   getEmployees,
@@ -138,4 +168,5 @@ module.exports = {
   updateEmployee,
   deleteEmployee,
   countEmployees, // <-- Très important : exporter la nouvelle fonction
+  getEmployeeCountsByRoleAndService, // <-- N'oublie pas d'exporter cette nouvelle fonction
 };

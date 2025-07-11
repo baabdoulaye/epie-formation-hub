@@ -1,4 +1,5 @@
 // backend/routes/employeeRoutes.js
+
 const express = require("express");
 const router = express.Router();
 const {
@@ -7,22 +8,20 @@ const {
   addEmployee,
   updateEmployee,
   deleteEmployee,
-  countEmployees, // <-- Ajout de la nouvelle fonction
+  countEmployees,
+  getEmployeeCountsByRoleAndService, // <-- Ajoute cette ligne
 } = require("../controllers/employeeController");
 
 // Route pour obtenir tous les employés et ajouter un nouvel employé
-// GET /api/employees
-// POST /api/employees
 router.route("/").get(getEmployees).post(addEmployee);
 
 // Nouvelle route pour obtenir le nombre total d'employés
-// GET /api/employees/count
-router.get("/count", countEmployees); // <-- Nouvelle route ajoutée ici
+router.get("/count", countEmployees);
+
+// Nouvelle route pour les statistiques par rôle et service
+router.get("/stats/roles-services", getEmployeeCountsByRoleAndService); // <-- Ajoute cette nouvelle route
 
 // Route pour obtenir, mettre à jour ou supprimer un employé par ID
-// GET /api/employees/:id
-// PUT /api/employees/:id
-// DELETE /api/employees/:id
 router
   .route("/:id")
   .get(getEmployeeById)

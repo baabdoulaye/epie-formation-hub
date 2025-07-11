@@ -2,68 +2,104 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Layout from "@/components/layout/Layout";
 import AddInternshipForm from "@/components/internships/AddInternshipForm";
-import EditInternshipForm from "@/components/internships/EditInternshipForm"; // Assure-toi que ce fichier existe
+import EditInternshipForm from "@/components/internships/EditInternshipForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label"; // Importation de Label pour le select
 import {
   Briefcase,
   Search,
   Plus,
   ArrowLeft,
   Building,
-  User, // Garder l'icône User
+  User,
   Trash,
   Edit,
-  Info, // Pour le statut/évaluation
-  Clock, // Pour la durée du stage
-  Calendar, // Pour les dates de stage
+  Info,
+  Clock,
+  Calendar,
+  Mail,
+  Phone,
+  MapPin,
+  Tag,
+  BookOpen, // Nouvelle icône pour la formation
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 
-// Définition locale de l'interface Internship (à adapter selon ton schéma réel)
+// Définition des options de secteur
+const SECTEUR_OPTIONS = [
+  "Tous", // Option pour afficher tous les secteurs
+  "Technologie",
+  "Services",
+  "Commerce",
+  "Industrie",
+  "Santé",
+  "Finance",
+  "Construction",
+];
+
+// Définition de l'interface Internship, alignée avec le modèle Stage du backend
 export interface Internship {
   id: string;
-  _id?: string;
-  student_name: string; // NOUVEAU : Nom du stagiaire
-  student_id?: string | null; // Rendu optionnel et peut être null
+  _id?: string; // MongoDB _id
+  student_name: string;
+  student_id?: string | null;
+  student_adresse?: string;
+  student_telephone?: string;
+  student_email?: string;
+
   entreprise: string;
-  tuteur_entreprise: string;
-  email_tuteur: string;
-  telephone_tuteur: string;
-  date_debut: string;
-  date_fin: string;
+  entreprise_adresse?: string;
+  entreprise_ville?: string;
+  entreprise_code_postal?: string;
+  secteur?: string;
+  formation_suivie?: string; // NOUVEAU: Champ formation_suivie
+
+  tuteur_entreprise?: string;
+  email_tuteur?: string;
+  telephone_tuteur?: string;
+  date_debut: string; // Sera une chaîne ISO (YYYY-MM-DD)
+  date_fin: string; // Sera une chaîne ISO (YYYY-MM-DD)
   duree_semaines?: number | null;
-  objectifs: string;
+  objectifs?: string;
   competences_visees?: string[];
-  statut: "En cours" | "Terminé" | "Annulé";
+  statut: "En cours" | "Terminé" | "Planifié"; // Statuts définis par le backend
   evaluation?: number | null;
   commentaires?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-// URL de base de l'API pour les stages
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "http://localhost:5000/api/internships";
+// Définition de l'interface pour les données du formulaire
+export type InternshipFormData = {
+  student_name: string;
+  student_adresse?: string;
+  student_telephone?: string;
+  student_email?: string;
 
-// Définir le type InternshipFormData basé sur le schéma Zod des formulaires
-type InternshipFormData = {
-  student_name: string; // NOUVEAU : Nom du stagiaire
-  student_id?: string | null;
   entreprise: string;
-  tuteur_entreprise: string;
-  email_tuteur: string;
-  telephone_tuteur: string;
-  date_debut: string;
-  date_fin: string;
-  duree_semaines?: number | null;
-  objectifs: string;
+  entreprise_adresse?: string;
+  entreprise_ville?: string;
+  entreprise_code_postal?: string;
+  secteur?: string;
+  formation_suivie?: string; // NOUVEAU: Champ formation_suivie dans le formulaire
+
+  tuteur_entreprise?: string;
+  email_tuteur?: string;
+  telephone_tuteur?: string;
+  date_debut: string; // Format YYYY-MM-DD
+  date_fin: string; // Format YYYY-MM-DD
+  objectifs?: string;
   competences_visees?: string[];
-  statut: "En cours" | "Terminé" | "Annulé";
   evaluation?: number | null;
   commentaires?: string;
 };
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "http://localhost:5000/api/internships";
 
 const Internships: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -71,23 +107,31 @@ const Internships: React.FC = () => {
     null
   );
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedSecteur, setSelectedSecteur] = useState<string>("Tous");
   const [internships, setInternships] = useState<Internship[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
+  // Fonction pour récupérer les stages depuis l'API avec filtre secteur
   const fetchInternships = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get<Internship[]>(API_BASE_URL);
+      const params = new URLSearchParams();
+      if (selectedSecteur && selectedSecteur !== "Tous") {
+        params.append("secteur", selectedSecteur);
+      }
+      const response = await axios.get<Internship[]>(
+        `${API_BASE_URL}?${params.toString()}`
+      );
+
       const fetchedInternships = response.data.map((internship) => ({
         ...internship,
-        id: internship._id || internship.id, // Assure que 'id' est bien le _id de MongoDB
+        id: internship._id || internship.id,
         date_debut: new Date(internship.date_debut).toISOString().split("T")[0],
         date_fin: new Date(internship.date_fin).toISOString().split("T")[0],
-        // Si student_name n'est pas encore dans la BDD, assure une valeur par défaut
-        student_name: internship.student_name || "Stagiaire Inconnu", // Gestion rétro-compatible
+        student_name: internship.student_name || "Stagiaire Inconnu",
       }));
       setInternships(fetchedInternships);
     } catch (err) {
@@ -103,22 +147,59 @@ const Internships: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [toast, selectedSecteur]);
 
+  // Effet pour charger les stages au montage du composant et lors du changement de filtre
   useEffect(() => {
     fetchInternships();
   }, [fetchInternships]);
 
+  // Filtrage des stages basés sur le terme de recherche (le filtrage par secteur est maintenant côté backend)
   const filteredInternships = internships.filter(
     (internship) =>
       internship.entreprise.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      internship.tuteur_entreprise
+      (internship.tuteur_entreprise &&
+        internship.tuteur_entreprise
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())) ||
+      (internship.objectifs &&
+        internship.objectifs
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())) ||
+      internship.student_name
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      internship.objectifs.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      internship.student_name.toLowerCase().includes(searchTerm.toLowerCase()) // NOUVEAU : Recherche par nom du stagiaire
+      (internship.entreprise_adresse &&
+        internship.entreprise_adresse
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())) ||
+      (internship.entreprise_ville &&
+        internship.entreprise_ville
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())) ||
+      (internship.entreprise_code_postal &&
+        internship.entreprise_code_postal
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())) ||
+      (internship.student_adresse &&
+        internship.student_adresse
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())) ||
+      (internship.student_telephone &&
+        internship.student_telephone
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())) ||
+      (internship.student_email &&
+        internship.student_email
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())) ||
+      (internship.formation_suivie &&
+        internship.formation_suivie
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())) // NOUVEAU: Recherche par formation
   );
 
+  // Gère l'ajout d'un nouveau stage
   const handleAddInternship = async (data: InternshipFormData) => {
     try {
       setLoading(true);
@@ -135,7 +216,7 @@ const Internships: React.FC = () => {
           .toISOString()
           .split("T")[0],
         date_fin: new Date(response.data.date_fin).toISOString().split("T")[0],
-        student_name: response.data.student_name || "Stagiaire Inconnu", // Assure la présence du nom
+        student_name: response.data.student_name || "Stagiaire Inconnu",
       };
       setInternships((prevInternships) => [...prevInternships, newInternship]);
       toast({
@@ -158,11 +239,13 @@ const Internships: React.FC = () => {
     }
   };
 
+  // Ouvre le formulaire de modification avec les données du stage sélectionné
   const handleOpenEditForm = (internship: Internship) => {
     setEditingInternship(internship);
     setShowAddForm(false);
   };
 
+  // Gère la mise à jour d'un stage existant
   const handleUpdateInternship = async (data: InternshipFormData) => {
     if (!editingInternship) return;
 
@@ -184,7 +267,7 @@ const Internships: React.FC = () => {
           .toISOString()
           .split("T")[0],
         date_fin: new Date(response.data.date_fin).toISOString().split("T")[0],
-        student_name: response.data.student_name || "Stagiaire Inconnu", // Assure la présence du nom
+        student_name: response.data.student_name || "Stagiaire Inconnu",
       };
       setInternships((prevInternships) =>
         prevInternships.map((s) =>
@@ -211,9 +294,10 @@ const Internships: React.FC = () => {
     }
   };
 
+  // Gère la suppression d'un stage
   const handleDeleteInternship = async (
     internshipId: string,
-    studentName: string, // Changé pour afficher le nom du stagiaire dans la confirmation
+    studentName: string,
     entrepriseName: string
   ) => {
     if (
@@ -249,24 +333,27 @@ const Internships: React.FC = () => {
     }
   };
 
+  // Annule l'affichage des formulaires d'ajout/modification
   const handleCancelForm = () => {
     setShowAddForm(false);
     setEditingInternship(null);
   };
 
+  // Détermine la couleur du badge de statut
   const getStatusColor = (statut: string) => {
     switch (statut) {
       case "En cours":
         return "bg-blue-100 text-blue-700";
       case "Terminé":
         return "bg-green-100 text-green-700";
-      case "Annulé":
-        return "bg-red-100 text-red-700";
+      case "Planifié":
+        return "bg-yellow-100 text-yellow-700";
       default:
         return "bg-gray-100 text-gray-700";
     }
   };
 
+  // Rendu conditionnel des formulaires d'ajout/modification
   if (editingInternship) {
     return (
       <Layout>
@@ -330,6 +417,7 @@ const Internships: React.FC = () => {
     );
   }
 
+  // Rendu de la liste des stages
   return (
     <Layout>
       <div className="space-y-6">
@@ -360,7 +448,7 @@ const Internships: React.FC = () => {
           </Button>
         </div>
 
-        {/* Barre de recherche et filtres (simplifiés) */}
+        {/* Barre de recherche et filtres */}
         <Card>
           <CardContent className="p-6">
             <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4">
@@ -368,19 +456,28 @@ const Internships: React.FC = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   type="text"
-                  placeholder="Rechercher par entreprise, tuteur, étudiant..."
+                  placeholder="Rechercher par entreprise, tuteur, étudiant, formation..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
-              <div className="flex space-x-2">
-                <select className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20">
-                  <option>Tous les secteurs</option>
-                  <option>Informatique</option>
-                  <option>Commerce</option>
-                  <option>Industrie</option>
-                  <option>Services</option>
+              {/* Filtre par secteur */}
+              <div className="relative">
+                <Label htmlFor="secteur-filter" className="sr-only">
+                  Filtrer par secteur
+                </Label>
+                <select
+                  id="secteur-filter"
+                  value={selectedSecteur}
+                  onChange={(e) => setSelectedSecteur(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {SECTEUR_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option === "Tous" ? "Tous les secteurs" : option}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -411,16 +508,23 @@ const Internships: React.FC = () => {
                           <Briefcase className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          {/* NOUVEAU: Affichage du nom du stagiaire avec une icône */}
                           <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                             <User className="h-5 w-5 text-blue-500" />
                             <span>{internship.student_name}</span>
                           </h3>
-                          {/* Ancien titre pour l'entreprise, adapté */}
                           <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
                             <Building className="h-4 w-4" />
                             <span>chez {internship.entreprise}</span>
                           </p>
+                          {/* NOUVEAU: Affichage de la formation suivie de manière plus visible */}
+                          {internship.formation_suivie && (
+                            <p className="text-md font-semibold text-gray-800 flex items-center gap-1 mt-2">
+                              <BookOpen className="h-5 w-5 text-purple-600" />
+                              <span>
+                                Formation: {internship.formation_suivie}
+                              </span>
+                            </p>
+                          )}
                         </div>
                       </div>
 
@@ -463,6 +567,70 @@ const Internships: React.FC = () => {
                           )}
                       </div>
 
+                      {/* Affichage des informations du stagiaire */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600 mt-3">
+                        {internship.student_adresse && (
+                          <div className="flex items-center space-x-2">
+                            <MapPin className="h-4 w-4" />
+                            <span>
+                              Adresse Stagiaire: {internship.student_adresse}
+                            </span>
+                          </div>
+                        )}
+                        {internship.student_telephone && (
+                          <div className="flex items-center space-x-2">
+                            <Phone className="h-4 w-4" />
+                            <span>
+                              Tél. Stagiaire: {internship.student_telephone}
+                            </span>
+                          </div>
+                        )}
+                        {internship.student_email && (
+                          <div className="flex items-center space-x-2">
+                            <Mail className="h-4 w-4" />
+                            <span>
+                              Email Stagiaire: {internship.student_email}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Affichage des informations de l'entreprise */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600 mt-3">
+                        {internship.entreprise_adresse && (
+                          <div className="flex items-center space-x-2">
+                            <MapPin className="h-4 w-4" />
+                            <span>
+                              Adresse Entreprise:{" "}
+                              {internship.entreprise_adresse}
+                            </span>
+                          </div>
+                        )}
+                        {internship.entreprise_ville && (
+                          <div className="flex items-center space-x-2">
+                            <MapPin className="h-4 w-4" />
+                            <span>
+                              Ville Entreprise: {internship.entreprise_ville}
+                            </span>
+                          </div>
+                        )}
+                        {internship.entreprise_code_postal && (
+                          <div className="flex items-center space-x-2">
+                            <MapPin className="h-4 w-4" />
+                            <span>
+                              Code Postal Entreprise:{" "}
+                              {internship.entreprise_code_postal}
+                            </span>
+                          </div>
+                        )}
+                        {internship.secteur && (
+                          <div className="flex items-center space-x-2">
+                            <Tag className="h-4 w-4" />
+                            <span>Secteur: {internship.secteur}</span>
+                          </div>
+                        )}
+                      </div>
+
                       <p className="text-sm text-gray-600 mt-3 p-3 bg-gray-50 rounded-lg">
                         **Objectifs:** {internship.objectifs}
                       </p>
@@ -481,13 +649,16 @@ const Internships: React.FC = () => {
                     </div>
 
                     <div className="flex flex-col items-end space-y-3">
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                          internship.statut
-                        )}`}
-                      >
-                        {internship.statut}
-                      </span>
+                      {/* Badge de statut */}
+                      {internship.statut && (
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                            internship.statut
+                          )}`}
+                        >
+                          {internship.statut}
+                        </span>
+                      )}
 
                       <div className="flex space-x-2">
                         <Button
@@ -503,7 +674,7 @@ const Internships: React.FC = () => {
                           onClick={() =>
                             handleDeleteInternship(
                               internship.id,
-                              internship.student_name, // Passe le nom du stagiaire
+                              internship.student_name,
                               internship.entreprise
                             )
                           }

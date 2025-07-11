@@ -211,7 +211,7 @@ const Trainings: React.FC = () => {
         </div>
 
         {/* Filtres */}
-        <Card>
+        {/* <Card>
           <CardContent className="p-6">
             <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4">
               <div className="flex space-x-2">
@@ -230,7 +230,7 @@ const Trainings: React.FC = () => {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Affichage conditionnel des formations ou du message "Catalogue des Formations" */}
         {loading && (

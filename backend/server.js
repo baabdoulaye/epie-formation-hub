@@ -32,28 +32,27 @@ const employeeRoutes = require("./routes/employeeRoutes");
 const partnersRoutes = require("./routes/partners");
 const formationRoutes = require("./routes/formationRoutes");
 const stagiaireRoutes = require("./routes/stagiaireRoutes");
-const sessionRoutes = require("./routes/sessionRoutes");
-const stageRoutes = require("./routes/stageRoutes"); // <--- AJOUTE CETTE LIGNE
+const sessionRoutes = require("./routes/sessionRoutes"); // Assure-toi que c'est bien importé
+const stageRoutes = require("./routes/stageRoutes");
 
 // Monte les routes
 app.use("/api/employees", employeeRoutes);
 app.use("/api/partners", partnersRoutes);
 app.use("/api/formations", formationRoutes);
 app.use("/api/stagiaires", stagiaireRoutes);
-app.use("/api/sessions", sessionRoutes);
-app.use("/api/internships", stageRoutes); // <--- AJOUTE CETTE LIGNE POUR LES STAGES
+app.use("/api/sessions", sessionRoutes); // Assure-toi que cette ligne est présente
+app.use("/api/internships", stageRoutes);
 
 app.get("/", (req, res) => {
   res.send("L'API est opérationnelle !!!");
 });
 
-// Gestionnaire d'erreurs global (AJOUTE CE BLOC POUR UNE MEILLEURE GESTION DES ERREURS)
+// Gestionnaire d'erreurs global
 app.use((err, req, res, next) => {
-  console.error(err.stack); // Log l'erreur complète pour le débogage
+  console.error(err.stack);
   res.status(err.statusCode || 500).json({
-    // Utilise un statut d'erreur spécifique si défini, sinon 500
     message: err.message || "Une erreur inattendue est survenue!",
-    ...(process.env.NODE_ENV === "development" && { error: err }), // N'affiche l'objet erreur qu'en dev
+    ...(process.env.NODE_ENV === "development" && { error: err }),
   });
 });
 
